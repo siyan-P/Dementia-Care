@@ -281,10 +281,20 @@ class _screen_loginState extends State<screen_login> {
                                                 BorderRadius.circular(18.0),
                                             side: BorderSide(
                                                 color: Colors.white)))),
-                                onPressed: () {},
+                                onPressed: () {
+                                  //normal username pass login -- home page
+                                  // Navigator.push(
+                                  //     context,
+                                  //     MaterialPageRoute(
+                                  //         builder: (context) => screen_home(
+                                               
+                                  //             )));
+                                },
                                 icon: const Icon(Icons.login),
                                 label: const Text("Login")),
-                                const SizedBox(height: 10,),
+                            const SizedBox(
+                              height: 10,
+                            ),
                             const Text("Or Login with Social media"),
                             SizedBox(
                               height: 20,
