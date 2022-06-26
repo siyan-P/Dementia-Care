@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
       title: 'Dementia care App',
       theme: ThemeData(
   
-     // primaryColor: Colors.white,
+      primaryColor: Colors.cyan,
       ),
       // 
     //  theme: ThemeData(scaffoldBackgroundColor: Colors.white.withOpacity(100)),

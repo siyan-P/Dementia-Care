@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_4/pages/googledemo.dart';
+import 'package:flutter_application_4/pages/screen_registration.dart';
 import 'package:flutter_application_4/sample.dart';
 import 'package:flutter_application_4/screen_home.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -179,6 +180,7 @@ class _screen_loginState extends State<screen_login> {
               builder: (context) => screen_home(
                     userData,
                     accessToken,
+                    
                   )));
     } else {
       print(result.status);
@@ -342,7 +344,9 @@ class _screen_loginState extends State<screen_login> {
                               children: [
                                 Text("Does not have account?"),
                                 TextButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => screen_registration()));
+                                  },
                                   child: const Text(
                                     'SignUp',
                                     style:

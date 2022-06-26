@@ -42,6 +42,7 @@ dependencies:
   
   
   
+  
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +73,10 @@ flutter:
    - images/dementia_login_whi.png
    - images/login.jpg
    - images/wecome.jpg
+   - images/emoji_cool.jpg
+   - images/emoji_bad.jpg
+   - images/emoji_normal.jpg
+   - images/emoji_smileGood.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

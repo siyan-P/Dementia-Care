@@ -46,10 +46,17 @@ class screen_splash extends StatelessWidget {
                             MaterialStateProperty.all<RoundedRectangleBorder>(
                                 const RoundedRectangleBorder(
                                     borderRadius:
-                                        BorderRadius.all(Radius.circular(15)),
-                                    side:
-                                        BorderSide(color: Colors.lightBlue)))),
+                                        BorderRadius.all(Radius.circular(20)),
+                                    side: BorderSide(color: Colors.white)))),
                   ),
+                  //    ElevatedButton.icon(
+                  // style: ElevatedButton.styleFrom(primary: Colors.cyan,),
+                  // onPressed: () {
+                  //   //logout --by login with facebook
+                  // //  _logOut(context);
+                  // },
+                  // icon: Icon(Icons.logout),
+                  // label: Text("LogOut")),
                 ],
               )),
         ));
