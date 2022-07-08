@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class sample extends StatelessWidget {
-  sample(this.user, { Key? key }) : super(key: key);
+  sample(this.user, { Key? key }) ;
 
   GoogleSignInAccount? user;
   String _contactText = '';

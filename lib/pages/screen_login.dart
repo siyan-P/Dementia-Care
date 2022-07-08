@@ -42,7 +42,7 @@ class _screen_loginState extends State<screen_login> {
   @override
   void initState() {
     super.initState();
-    _checkIfIsLogged();
+    _checkIfIsLogged(); //facebook check whether is it logged or not?
     _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
       setState(() {
         _currentUser = account;
@@ -54,7 +54,7 @@ class _screen_loginState extends State<screen_login> {
     _googleSignIn.signInSilently();
   }
 
-  //google
+  //google --display the current user information,(now it is not in our project)
   Future<void> _handleGetContact(GoogleSignInAccount user) async {
     setState(() {
       _contactText = 'Loading contact info...';
@@ -107,12 +107,24 @@ class _screen_loginState extends State<screen_login> {
   Future<void> _handleSignIn() async {
     try {
       await _googleSignIn.signIn();
+    
+      _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
+      setState(() {
+        _currentUser = account;
+      });
+      
+      if (_currentUser != null) {
+        _handleGetContact(_currentUser!);
+        //   _currentUser != null ? Navigator.push(
+        // context, MaterialPageRoute(builder: (context) => screen_home(null,null,_currentUser,))) : null;
+      }
+      _googleSignIn.signInSilently();
+    });
+       _currentUser != null ? Navigator.push(
+        context, MaterialPageRoute(builder: (context) => screen_home(null,null,_currentUser,))) : null;
     } catch (error) {
       print(error);
     }
-    // print(_currentUser!.email);
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => sample(_currentUser)));
   }
 
   // google account signOut
@@ -180,6 +192,7 @@ class _screen_loginState extends State<screen_login> {
               builder: (context) => screen_home(
                     userData,
                     accessToken,
+                    null
                     
                   )));
     } else {
