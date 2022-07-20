@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_4/pages/screen_login.dart';
+//import 'package:awesome_notifications/awesome_notifications.dart';
 
-class screen_splash extends StatelessWidget {
+class screen_splash extends StatefulWidget {
   const screen_splash({Key? key}) : super(key: key);
 
+  @override
+  State<screen_splash> createState() => _screen_splashState();
+}
+
+class _screen_splashState extends State<screen_splash> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,6 +39,7 @@ class screen_splash extends StatelessWidget {
                   ),
                   ElevatedButton.icon(
                     onPressed: () {
+                   //   notify();
                       Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -61,4 +68,20 @@ class screen_splash extends StatelessWidget {
               )),
         ));
   }
+  //fun used to display notifications--using awesome notification
+//   void notify() async{
+//      String timezom = await AwesomeNotifications().getLocalTimeZoneIdentifier(); //get time zone you are in
+
+// AwesomeNotifications().createNotification(
+//       content: NotificationContent(
+//         id: 1,
+//         channelKey: 'key1',
+//         title: 'This is Notification title',
+//         body: 'This is Body of Noti',
+//      //   bigPicture: 'https://protocoderspoint.com/wp-content/uploads/2021/05/Monitize-flutter-app-with-google-admob-min-741x486.png',
+//      //   notificationLayout: NotificationLayout.BigPicture
+//       ),
+//    schedule: NotificationInterval(interval: 2,timeZone: timezom,repeats: true),
+//   );
+//   }
 }

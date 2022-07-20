@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_4/consts/constands.dart';
+import 'package:flutter_application_4/local_db/db_functions.dart';
 import 'package:flutter_application_4/pages/screen_login.dart';
 import 'package:flutter_application_4/pages/screen_symptoms.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -7,19 +10,30 @@ import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_application_4/consts/constands.dart';
 
-String prettyPrint(Map json) {
+
+class screen_home extends StatefulWidget {
+  screen_home(this._userData, this.accessToken, this.user) ;
+  
+  Map<String, dynamic>? _userData;
+  AccessToken? accessToken;
+  //login with google-data receving
+  GoogleSignInAccount? user;
+
+  @override
+  State<screen_home> createState() => _screen_homeState();
+}
+
+class _screen_homeState extends State<screen_home> {
+  bool isClicked = true;
+  //screen_home(Map<String, dynamic>? userData, AccessToken? accessToken, {Key? key}) : super(key: key);
+  String prettyPrint(Map json) {
   JsonEncoder encoder = const JsonEncoder.withIndent('  ');
   String pretty = encoder.convert(json);
   return pretty;
 }
 
-class screen_home extends StatelessWidget {
-  //screen_home(Map<String, dynamic>? userData, AccessToken? accessToken, {Key? key}) : super(key: key);
-  //accessing passed data -- accessToken and userdata:
-  screen_home(this._userData, this.accessToken, this.user) ;
-  
   void checking(){
-    if(_userData  == null){
+    if(widget._userData  == null){
       // GoogleSignInAccount? user;
       // String _contactText = '';
       // GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -32,32 +46,31 @@ class screen_home extends StatelessWidget {
   String _contactText = '';
   }
   }
-  Map<String, dynamic>? _userData;
-  AccessToken? accessToken;
-  //login with google-data receving
-  GoogleSignInAccount? user;
-  String _contactText = '';
-  GoogleSignIn _googleSignIn = GoogleSignIn();
-  //google-info
-    // GoogleSignInAccount? _user;
-    // String contactText = '';
-    // GoogleSignIn _googleSignIn = GoogleSignIn();
-  // bool _checking = true;
-  //checking accessToken is recived or not:
 
-  // void access() {
-  //   print("clikedddd event");
-  //   if (accessToken != null) {
-  //     print("cliked event");
-  //     print(accessToken!.userId);
-  //     print("is Logged:::: ${prettyPrint(accessToken!.toJson())}");
-  //   }
-  // }
+  String _contactText = '';
+
+  GoogleSignIn _googleSignIn = GoogleSignIn();
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Timer(Duration(hours: 24),() {
+      setState(() {
+        isClicked = true;
+      });
+    });
+  }
+
+  //through facebook login-info
+  @override
   Widget build(BuildContext context) {
+    //created for checking if the user is clicked the emojis.
+  //  bool isClicked = true;
+    //getAllData() --used to display all datas from the local database.
+    getAllData();
     print("in home page");
-    if(_userData != null){
+    if(widget._userData != null){
       return Scaffold(
       appBar: AppBar(
         backgroundColor: color.myColorS,
@@ -85,17 +98,17 @@ class screen_home extends StatelessWidget {
                         shape: BoxShape.circle,
                         image: DecorationImage(
                           image: NetworkImage(
-                              _userData?['picture']['data']['url']),
+                              widget._userData?['picture']['data']['url']),
                           fit: BoxFit.fill,
                         ),
                       ),
                     ),
                     Text(
-                      _userData!['email'],
+                      widget._userData!['email'],
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, color: Colors.white),
                     ),
-                    Text(_userData!['name'],
+                    Text(widget._userData!['name'],
                         style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
@@ -178,7 +191,7 @@ class screen_home extends StatelessWidget {
                           shape: BoxShape.circle,
                           image: DecorationImage(
                             image: NetworkImage(
-                                _userData?['picture']['data']['url']),
+                                widget._userData?['picture']['data']['url']),
                             fit: BoxFit.fill,
                           ),
                         ),
@@ -196,9 +209,9 @@ class screen_home extends StatelessWidget {
                               fontStyle: FontStyle.italic,
                               color: Colors.black),
                         ),
-                        accessToken != null
+                        widget.accessToken != null
                             ? Text(
-                                _userData!['name'],
+                                widget._userData!['name'],
                                 style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
@@ -217,9 +230,9 @@ class screen_home extends StatelessWidget {
                         //  crossAxisAlignment: CrossAxisAlignment.start,
 
                         children: [
-                          accessToken != null
+                          widget.accessToken != null
                               ? Text(
-                                  _userData!['email'],
+                                  widget._userData!['email'],
                                   style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
@@ -341,11 +354,18 @@ class screen_home extends StatelessWidget {
                                                 onPressed: () {
                                                   Navigator.pop(context);
                                                 }),
+                                                //if user clicked ones--disble the btn.and also pass the value to local_db
                                             ElevatedButton(
-                                                child: Text("Done"),
-                                                onPressed: () {
+                                                
+                                                onPressed: isClicked? () {
+                                                  {
+                                                    setState(() {
+                                                      insertData('Very_Good');
+                                                      isClicked=false;
+                                                    });
+                                                  }
                                                   Navigator.pop(context);
-                                                }),
+                                                }:null,child: Text("Done"),),
                                           ],
                                         );
                                       });
@@ -390,11 +410,17 @@ class screen_home extends StatelessWidget {
                                                 onPressed: () {
                                                   Navigator.pop(context);
                                                 }),
-                                            ElevatedButton(
-                                                child: Text("Done"),
-                                                onPressed: () {
+                                             ElevatedButton(
+                                                
+                                                onPressed: isClicked? () {
+                                                  {
+                                                    setState(() {
+                                                      insertData('Good');
+                                                      isClicked=false;
+                                                    });
+                                                  }
                                                   Navigator.pop(context);
-                                                }),
+                                                }:null,child: Text("Done"),),
                                           ],
                                         );
                                       });
@@ -438,11 +464,17 @@ class screen_home extends StatelessWidget {
                                                 onPressed: () {
                                                   Navigator.pop(context);
                                                 }),
-                                            ElevatedButton(
-                                                child: Text("Done"),
-                                                onPressed: () {
+                                             ElevatedButton(
+                                                
+                                                onPressed: isClicked? () {
+                                                  {
+                                                    setState(() {
+                                                      insertData('Nothing');
+                                                      isClicked=false;
+                                                    });
+                                                  }
                                                   Navigator.pop(context);
-                                                }),
+                                                }:null,child: Text("Done"),),
                                           ],
                                         );
                                       });
@@ -487,10 +519,16 @@ class screen_home extends StatelessWidget {
                                                   Navigator.pop(context);
                                                 }),
                                             ElevatedButton(
-                                                child: Text("Done"),
-                                                onPressed: () {
+                                                
+                                                onPressed: isClicked? () {
+                                                  {
+                                                    setState(() {
+                                                      insertData('Bad');
+                                                      isClicked=false;
+                                                    });
+                                                  }
                                                   Navigator.pop(context);
-                                                }),
+                                                }:null,child: Text("Done"),),
                                           ],
                                         );
                                       });
@@ -537,11 +575,17 @@ class screen_home extends StatelessWidget {
                                                 onPressed: () {
                                                   Navigator.pop(context);
                                                 }),
-                                            ElevatedButton(
-                                                child: Text("Done"),
-                                                onPressed: () {
+                                          ElevatedButton(
+                                                
+                                                onPressed: isClicked? () {
+                                                  {
+                                                    setState(() {
+                                                      insertData('very_Bad');
+                                                      isClicked=false;
+                                                    });
+                                                  }
                                                   Navigator.pop(context);
-                                                }),
+                                                }:null,child: Text("Done"),),
                                           ],
                                         );
                                       });
@@ -646,7 +690,7 @@ class screen_home extends StatelessWidget {
                     //   ),
                     
                     ),
-                    Text(user!.email,
+                    Text(widget.user!.email,
                   //    _userData!['email'],
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, color: Colors.white),
@@ -774,9 +818,9 @@ class screen_home extends StatelessWidget {
                         //  crossAxisAlignment: CrossAxisAlignment.start,
 
                         children: [
-                    user!= null ?
+                    widget.user!= null ?
                              Text(
-                                user!.email,
+                                widget.user!.email,
                                 style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
@@ -898,6 +942,7 @@ class screen_home extends StatelessWidget {
                                                 onPressed: () {
                                                   Navigator.pop(context);
                                                 }),
+                                                //if user click done ,,then -disable button until a const time!
                                             ElevatedButton(
                                                 child: Text("Done"),
                                                 onPressed: () {
@@ -1169,8 +1214,8 @@ class screen_home extends StatelessWidget {
 
   Future<void> _logOut(ctx) async {
     await FacebookAuth.instance.logOut();
-    accessToken = null;
-    _userData = null;
+    // accessToken = null;
+   // _userData = null;
     // setState(() {});
     //  Navigator.pop(ctx);
     Navigator.of(ctx).popUntil((route) => route.isFirst);
