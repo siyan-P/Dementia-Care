@@ -68,6 +68,7 @@ class screen_signup extends StatelessWidget {
                   padding:
                       const EdgeInsets.only(left: 28, right: 28, bottom: 10),
                   child: TextFormField(
+                    obscureText: true,
                     decoration: const InputDecoration(
                       // errorBorder:
                       border: OutlineInputBorder(),
@@ -84,6 +85,7 @@ class screen_signup extends StatelessWidget {
                   padding:
                       const EdgeInsets.only(left: 28, right: 28, bottom: 10),
                   child: TextFormField(
+                    obscureText: true,
                     decoration: const InputDecoration(
                       // errorBorder:
                       border: OutlineInputBorder(),

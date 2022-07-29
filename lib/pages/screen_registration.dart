@@ -76,9 +76,11 @@ class screen_registration extends StatelessWidget {
                                         side:
                                             BorderSide(color: Colors.white)))),
                             child: const Text(
-                              'SignUp using facebook',
+                              'Continue with facebook',
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                            //  _login();
+                            },
                           ),
                           ElevatedButton(
                             style: ButtonStyle(
@@ -90,7 +92,7 @@ class screen_registration extends StatelessWidget {
                                         side:
                                             BorderSide(color: Colors.white)))),
                             child: const Text(
-                              'SignUp using Google',
+                              'Continue with Google',
                             ),
                             onPressed: () {},
                           ),

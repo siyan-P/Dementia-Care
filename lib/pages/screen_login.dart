@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_4/local_db/data_model.dart';
 import 'package:flutter_application_4/pages/googledemo.dart';
 import 'package:flutter_application_4/pages/screen_registration.dart';
 import 'package:flutter_application_4/sample.dart';
@@ -109,9 +110,9 @@ class _screen_loginState extends State<screen_login> {
       await _googleSignIn.signIn();
     
       _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
-      setState(() {
-        _currentUser = account;
-      });
+      // setState(() {
+      //   _currentUser = account;
+      // });
       
       if (_currentUser != null) {
         _handleGetContact(_currentUser!);
@@ -271,11 +272,13 @@ class _screen_loginState extends State<screen_login> {
                               padding:
                                   const EdgeInsets.only(left: 28, right: 28),
                               child: TextFormField(
+                                obscureText: true,
                                 decoration: const InputDecoration(
                                   // errorBorder:
                                   border: OutlineInputBorder(),
                                   hintText: 'octavia',
                                   labelText: 'Password',
+                                  
                                   fillColor: Colors.grey,
                                   prefixIcon: Icon(Icons.password),
                                   suffixIconColor: Colors.blue,
