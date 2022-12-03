@@ -12,115 +12,153 @@ class screen_registration extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Center(
-            child: Column(
-              children: [
-                Container(
-                    alignment: Alignment.topLeft,
-                    child: Image.asset(
-                      "images/dementia_login_whi.png",
-                      height: 150,
-                    )),
-                const Text(
-                  "Dementia Care \n Registration",
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                Image.asset(
-                  "images/login.jpg",
-                  height: 150,
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    //  height: 200,
-                    decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                      color: color.myColor,
-                      //   color: Colors.blueGrey
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(13),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 50,
+              ),
+              Image.asset(
+                "images/Dementia-1-removebg-preview.jpg",
+                height: 160,
+              ),
+              Text(
+                "REGISTRATION",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                    color: Colors.pink.shade700),
+              ),
+              SizedBox(
+                height: 150,
+              ),
+              Center(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(15),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          ElevatedButton(
-                            style: ButtonStyle(
-                                shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(18.0),
-                                        side:
-                                            BorderSide(color: Colors.white)))),
-                            child: const Text(
-                              'SignUp using userData',
-                              //  style: TextStyle(color: Colors.black),
+                          Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => screen_signup(),
+                                    ));
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.all(
+                                        const Radius.circular(15)),
+                                    color: Colors.pink.shade700),
+                                height: 33,
+                                //  color: Colors.pink.shade700,
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  "SignUp With userData",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white),
+                                ),
+                              ),
                             ),
-                            onPressed: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => screen_signup()));
-                            },
                           ),
-                          ElevatedButton(
-                            style: ButtonStyle(
-                                shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(18.0),
-                                        side:
-                                            BorderSide(color: Colors.white)))),
-                            child: const Text(
-                              'Continue with facebook',
-                            ),
-                            onPressed: () {
-                            //  _login();
-                            },
+                          SizedBox(
+                            height: 5,
                           ),
-                          ElevatedButton(
-                            style: ButtonStyle(
-                                shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(18.0),
-                                        side:
-                                            BorderSide(color: Colors.white)))),
-                            child: const Text(
-                              'Continue with Google',
+                          Text("OR"),
+                          Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: GestureDetector(
+                              onTap: () {
+                                //login-->facebook
+                                //  _login();
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(15)),
+                                    color: Colors.grey.shade200),
+                                height: 33,
+                                //  color: Colors.pink.shade700,
+                                alignment: Alignment.center,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    // Icon(Icons.google),
+                                    Image.asset("images/fb.png"),
+                                    Text(
+                                      "SignUp With Facebook",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                            onPressed: () {},
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Text("OR"),
+                          Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: GestureDetector(
+                              onTap: () {
+                                // if (_formKey.currentState!.validate()) {
+                                //   ScaffoldMessenger.of(context).showSnackBar(
+                                //     SnackBar(content: Text('Processing Data')),
+                                //   );
+                                //   //navigation to  home page
+
+                                // }
+                              },
+                              child: GestureDetector(
+                                onTap: () {
+                                  //Login with google-->google
+                                  //  _handleSignIn();
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(15)),
+                                      color: Colors.redAccent.shade100),
+                                  height: 33,
+                                  //  color: Colors.pink.shade700,
+                                  alignment: Alignment.center,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Image.asset(
+                                        "images/google-plus.png",
+                                        height: 22,
+                                      ),
+                                      Text(
+                                        "SignUp With Google",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("have an Account?"),
-                    TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text(
-                          "LogIn",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, color: Colors.blue),
-                        )),
+                    SizedBox(
+                      height: 9,
+                    ),
                   ],
-                )
-              ],
-            ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

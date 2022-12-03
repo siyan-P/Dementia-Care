@@ -8,6 +8,8 @@ import 'package:flutter_application_4/screen_home.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
+import 'package:http/retry.dart';
 
 String prettyPrint(Map json) {
   JsonEncoder encoder = const JsonEncoder.withIndent('  ');
@@ -16,13 +18,16 @@ String prettyPrint(Map json) {
 }
 
 class screen_login extends StatefulWidget {
-  const screen_login({Key? key}) : super(key: key);
+  screen_login({Key? key}) : super(key: key);
 
   @override
   State<screen_login> createState() => _screen_loginState();
 }
 
 class _screen_loginState extends State<screen_login> {
+  TextEditingController emailControllerL = TextEditingController();
+  TextEditingController passControllerL = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   //facebook
   Map<String, dynamic>? _userData;
   AccessToken? _accessToken;
@@ -32,8 +37,9 @@ class _screen_loginState extends State<screen_login> {
   String _contactText = '';
 
   GoogleSignIn _googleSignIn = GoogleSignIn(
-    // Optional clientId
-    // clientId: '479882132969-9i9aqik3jfjd7qhci1nqf0bm2g71rm1u.apps.googleusercontent.com',
+    // Optional clientId,
+    // clientId:
+    //   '479882132969-9i9aqik3jfjd7qhci1nqf0bm2g71rm1u.apps.googleusercontent.com',
     scopes: <String>[
       'email',
       'https://www.googleapis.com/auth/contacts.readonly',
@@ -45,21 +51,22 @@ class _screen_loginState extends State<screen_login> {
     super.initState();
     _checkIfIsLogged(); //facebook check whether is it logged or not?
     _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
+      print("sample $account");
       setState(() {
         _currentUser = account;
       });
-      if (_currentUser != null) {
-        _handleGetContact(_currentUser!);
-      }
+      // if (_currentUser != null) {
+      //   _handleGetContact(_currentUser!);
+      // }
     });
     _googleSignIn.signInSilently();
   }
 
   //google --display the current user information,(now it is not in our project)
   Future<void> _handleGetContact(GoogleSignInAccount user) async {
-    setState(() {
-      _contactText = 'Loading contact info...';
-    });
+    // setState(() {
+    //   _contactText = 'Loading contact info...';
+    // });
     final http.Response response = await http.get(
       Uri.parse('https://people.googleapis.com/v1/people/me/connections'
           '?requestMask.includeField=person.names'),
@@ -107,29 +114,49 @@ class _screen_loginState extends State<screen_login> {
   //google sign in and signout
   Future<void> _handleSignIn() async {
     try {
-      await _googleSignIn.signIn();
-    
-      _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
-      // setState(() {
-      //   _currentUser = account;
+      _googleSignIn.signIn().then((value) => {
+            _currentUser != null
+                ? Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => screen_home(
+                              null,
+                              null,
+                              _currentUser,
+                            )))
+                : null
+          });
+
+      // _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
+      //   setState(() {
+      //     _currentUser = account;
+      //   });
+
+      //   if (_currentUser != null) {
+      //     _handleGetContact(_currentUser!);
+      //     //   _currentUser != null ? Navigator.push(
+      //     // context, MaterialPageRoute(builder: (context) => screen_home(null,null,_currentUser,))) : null;
+      //   }
+      //   _googleSignIn.signInSilently();
       // });
-      
-      if (_currentUser != null) {
-        _handleGetContact(_currentUser!);
-        //   _currentUser != null ? Navigator.push(
-        // context, MaterialPageRoute(builder: (context) => screen_home(null,null,_currentUser,))) : null;
-      }
-      _googleSignIn.signInSilently();
-    });
-       _currentUser != null ? Navigator.push(
-        context, MaterialPageRoute(builder: (context) => screen_home(null,null,_currentUser,))) : null;
+
     } catch (error) {
       print(error);
     }
+    _currentUser != null
+        ? Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => screen_home(
+                      null,
+                      null,
+                      _currentUser,
+                    )))
+        : null;
   }
 
   // google account signOut
-  Future<void> _handleSignOut() => _googleSignIn.disconnect();
+  // Future<void> _handleSignOut() => _googleSignIn.disconnect();
 
   //facebook check if the user is loged or not
   Future<void> _checkIfIsLogged() async {
@@ -190,12 +217,7 @@ class _screen_loginState extends State<screen_login> {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => screen_home(
-                    userData,
-                    accessToken,
-                    null
-                    
-                  )));
+              builder: (context) => screen_home(userData, accessToken, null)));
     } else {
       print(result.status);
       print(result.message);
@@ -206,12 +228,32 @@ class _screen_loginState extends State<screen_login> {
     });
   }
 
-  //facebook-logout
-  Future<void> _logOut() async {
-    await FacebookAuth.instance.logOut();
-    _accessToken = null;
-    _userData = null;
-    setState(() {});
+//-->login with username and password
+  Future<void> login(String email, pass, BuildContext ctx) async {
+    try {
+      Response response =
+          await post(Uri.parse('https://reqres.in/api/login'), body: {
+        'email': email,
+        'password': pass,
+      });
+      if (response.statusCode == 200) {
+        print("account created succssefully");
+        //navigate to home page
+        Navigator.push(
+            ctx,
+            MaterialPageRoute(
+                builder: (context) => screen_home(
+                      null,
+                      null,
+                      null,
+                      email,
+                    )));
+      } else {
+        print("faild to creating account");
+      }
+    } catch (e) {
+      print(e.toString());
+    }
   }
 
   @override
@@ -227,163 +269,219 @@ class _screen_loginState extends State<screen_login> {
               : Padding(
                   padding: EdgeInsets.zero,
                   child: SingleChildScrollView(
-                    child: Stack(
-                      children: [
-                        Column(
-                          children: <Widget>[
-                            Container(
-                                alignment: Alignment.topLeft,
-                                child: Image.asset(
-                                  "images/dementia_login_whi.png",
-                                  height: 150,
-                                )),
-                            const Text(
-                              "Welcome Back!",
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: <Widget>[
+                          const SizedBox(height: 50),
+                          Image.asset(
+                            "images/Dementia-1-removebg-preview.jpg",
+                            height: 160,
+                          ),
+                          const SizedBox(
+                            height: 70,
+                          ),
+                          Container(
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.only(
+                                left: 28, right: 28, bottom: 10),
+                            child: TextFormField(
+                              controller: emailControllerL,
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return 'pls enter some data';
+                                }
+                                return null;
+                              },
+                              decoration: const InputDecoration(
+                                // errorBorder:
+                                border: OutlineInputBorder(),
+                                hintText: 'eg: octavia@123',
+                                labelText: 'user email',
+                                fillColor: Colors.pinkAccent,
+                                prefixIcon:
+                                    Icon(Icons.person_pin_circle_outlined),
+                                suffixIconColor: Colors.pinkAccent,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.only(left: 28, right: 28),
+                            child: TextFormField(
+                              cursorColor: Colors.pink,
+                              controller: passControllerL,
+                              obscureText: true,
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return 'pls enter some data';
+                                }
+                                if (value.length < 4) {
+                                  return 'passwors must be atleast 4';
+                                }
+                                return null;
+                              },
+                              decoration: const InputDecoration(
+                                // errorBorder:
+                                border: OutlineInputBorder(),
+                                hintText: 'octavia',
+                                labelText: 'Password',
+
+                                fillColor: Colors.pink,
+                                prefixIcon: Icon(Icons.password),
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              //function to add forgott password!
+                            },
+                            child: const Text(
+                              'Forgott Password?',
                               style: TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.bold),
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold),
                             ),
-                            const SizedBox(height: 10),
-                            Image.asset(
-                              "images/login.jpg",
-                              height: 120,
-                            ),
-                            const SizedBox(
-                              height: 15,
-                            ),
-                            Container(
-                              alignment: Alignment.center,
-                              padding: const EdgeInsets.only(
-                                  left: 28, right: 28, bottom: 10),
-                              child: TextFormField(
-                                decoration: const InputDecoration(
-                                  // errorBorder:
-                                  border: OutlineInputBorder(),
-                                  hintText: 'eg: octavia@123',
-                                  labelText: 'user name',
-                                  fillColor: Colors.grey,
-                                  prefixIcon:
-                                      Icon(Icons.person_pin_circle_outlined),
-                                  suffixIconColor: Colors.blue,
+                          ),
+                          const SizedBox(height: 6),
+
+                          Padding(
+                            padding: const EdgeInsets.only(left: 28, right: 28),
+                            child: GestureDetector(
+                              onTap: () {
+                                if (_formKey.currentState!.validate()) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('Processing Data')),
+                                  );
+                                  login(emailControllerL.text.toString(),
+                                      passControllerL.text.toString(), context);
+                                  //navigation to  home page
+
+                                }
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(15)),
+                                    color: Colors.pink.shade700),
+                                height: 33,
+                                //  color: Colors.pink.shade700,
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  "Login",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white),
                                 ),
                               ),
                             ),
-                            Container(
-                              alignment: Alignment.center,
-                              padding:
-                                  const EdgeInsets.only(left: 28, right: 28),
-                              child: TextFormField(
-                                obscureText: true,
-                                decoration: const InputDecoration(
-                                  // errorBorder:
-                                  border: OutlineInputBorder(),
-                                  hintText: 'octavia',
-                                  labelText: 'Password',
-                                  
-                                  fillColor: Colors.grey,
-                                  prefixIcon: Icon(Icons.password),
-                                  suffixIconColor: Colors.blue,
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          const Text(
+                            "Or Login with Social media",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+
+                          Padding(
+                            padding: const EdgeInsets.only(left: 28, right: 28),
+                            child: GestureDetector(
+                              onTap: () {
+                                //login-->facebook
+                                _login();
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(15)),
+                                    color: Colors.grey.shade200),
+                                height: 33,
+                                //  color: Colors.pink.shade700,
+                                alignment: Alignment.center,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    // Icon(Icons.google),
+                                    Image.asset("images/fb.png"),
+                                    const Text(
+                                      "Sign In with Facebook",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                            TextButton(
-                              onPressed: () {},
-                              child: const Text('Forgott Password?'),
+                          ),
+                          const SizedBox(
+                            height: 9,
+                          ),
+                          //UI for google signIn button
+                          Padding(
+                            padding: const EdgeInsets.only(left: 28, right: 28),
+                            child: GestureDetector(
+                              onTap: () {
+                                //Login with google-->google
+                                _handleSignIn();
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(15)),
+                                    color: Colors.redAccent.shade100),
+                                height: 33,
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Image.asset(
+                                      "images/google-plus.png",
+                                      height: 22,
+                                    ),
+                                    const Text(
+                                      "Sign In with Google",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                            const SizedBox(height: 10),
-                            ElevatedButton.icon(
-                                style: ButtonStyle(
-                                    shape: MaterialStateProperty.all<
-                                            RoundedRectangleBorder>(
-                                        RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(18.0),
-                                            side: BorderSide(
-                                                color: Colors.white)))),
+                          ),
+
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text("Does not have account?"),
+                              TextButton(
                                 onPressed: () {
-                                  //normal username pass login -- home page
-                                  // Navigator.push(
-                                  //     context,
-                                  //     MaterialPageRoute(
-                                  //         builder: (context) => screen_home(
-                                               
-                                  //             )));
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const screen_registration()));
                                 },
-                                icon: const Icon(Icons.login),
-                                label: const Text("Login")),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            const Text("Or Login with Social media"),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                ElevatedButton(
-                                    style: ButtonStyle(
-                                        shape: MaterialStateProperty.all<
-                                                RoundedRectangleBorder>(
-                                            RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(18.0),
-                                                side: BorderSide(
-                                                    color: Colors.white)))),
-                                    onPressed: () {
-                                      _login();
-                                      // _checkIfIsLogged();
-                                      //  Navigator.push(context, MaterialPageRoute(builder: (context) => screen_home(_userData)));
-                                    },
-                                    child: const Text("facebook")),
-                                const SizedBox(
-                                  width: 10,
+                                child: const Text(
+                                  'SignUp',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.pink),
                                 ),
-                                ElevatedButton(
-                                    style: ButtonStyle(
-                                        shape: MaterialStateProperty.all<
-                                                RoundedRectangleBorder>(
-                                            RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(18.0),
-                                                side: BorderSide(
-                                                    color: Colors.white)))),
-                                    onPressed: () {
-                                      _handleSignIn();
-                                    },
-                                    child: const Text("Google")),
-                              ],
-                            ),
-
-                            const SizedBox(height: 10),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text("Does not have account?"),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => screen_registration()));
-                                  },
-                                  child: const Text(
-                                    'SignUp',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ],
-                            )
-                            //button - login with google--call function _handleSignIn()
-
-                            // ElevatedButton(
-                            //     onPressed: () {
-                            //       _handleSignOut();
-                            //     },
-                            //     child: const Text("out")),
-                            //   ElevatedButton(onPressed: (){
-                            //  Navigator.push(context, MaterialPageRoute(builder: (context) => SignInDemo()));
-                            //  }, child: const Text("google demo")),
-                          ],
-                        ),
-                      ],
+                              ),
+                            ],
+                          )
+                          //button - login with google--call function _handleSignIn()
+                        ],
+                      ),
                     ),
                   ),
                 ),

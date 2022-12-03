@@ -1,9 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_4/pages/screen_login.dart';
 import 'package:flutter_application_4/screen_home.dart';
+import 'package:http/http.dart';
 
 class screen_signup extends StatelessWidget {
-  const screen_signup({Key? key}) : super(key: key);
+  screen_signup({Key? key}) : super(key: key);
+  final _formKey = GlobalKey<FormState>();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passController = TextEditingController();
+
+  Future<void> login(String email, pass, BuildContext ctx) async {
+    try {
+      Response response =
+          await post(Uri.parse('https://reqres.in/api/register'), body: {
+        'email': email,
+        'password': pass,
+      });
+      if (response.statusCode == 200) {
+        print("account created succssefull");
+
+        Navigator.push(
+            ctx,
+            MaterialPageRoute(
+                builder: (context) => screen_home(
+                      null,
+                      null,
+                      null,
+                      email,
+                    )));
+      } else {
+        print("faild to creating account");
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,137 +42,177 @@ class screen_signup extends StatelessWidget {
         backgroundColor: Colors.white,
         body: SafeArea(
           child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Container(
-                    alignment: Alignment.topLeft,
-                    child: Image.asset(
-                      "images/dementia_login_whi.png",
-                      height: 135,
-                    )),
-                const Text(
-                  "SignUp Here!",
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Image.asset(
-                  "images/login.jpg",
-                  height: 120,
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Container(
-                  alignment: Alignment.center,
-                  padding:
-                      const EdgeInsets.only(left: 28, right: 28, bottom: 10),
-                  child: TextFormField(
-                    decoration: const InputDecoration(
-                      // errorBorder:
-                      border: OutlineInputBorder(),
-                      hintText: 'eg: octavia@123',
-                      labelText: 'user name',
-                      fillColor: Colors.grey,
-                      prefixIcon: Icon(Icons.person_pin_circle_outlined),
-                      suffixIconColor: Colors.blue,
-                    ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  const SizedBox(height: 60),
+                  Image.asset(
+                    "images/Dementia-1-removebg-preview.jpg",
+                    height: 160,
                   ),
-                ),
-                Container(
-                  alignment: Alignment.center,
-                  padding:
-                      const EdgeInsets.only(left: 28, right: 28, bottom: 10),
-                  child: TextFormField(
-                    decoration: const InputDecoration(
-                      // errorBorder:
-                      border: OutlineInputBorder(),
-                      hintText: 'eg: octavia123@gmail.com',
-                      labelText: 'user email',
-                      fillColor: Colors.grey,
-                      prefixIcon: Icon(Icons.email_outlined),
-                      suffixIconColor: Colors.blue,
-                    ),
+                  const SizedBox(
+                    height: 35,
                   ),
-                ),
-                Container(
-                  alignment: Alignment.center,
-                  padding:
-                      const EdgeInsets.only(left: 28, right: 28, bottom: 10),
-                  child: TextFormField(
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      // errorBorder:
-                      border: OutlineInputBorder(),
-                      hintText: 'eg: octavia@123',
-                      labelText: 'password',
-                      fillColor: Colors.grey,
-                      prefixIcon: Icon(Icons.password_outlined),
-                      suffixIconColor: Colors.blue,
-                    ),
+                  const Text(
+                    "SignUp Here!",
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.pink),
                   ),
-                ),
-                Container(
-                  alignment: Alignment.center,
-                  padding:
-                      const EdgeInsets.only(left: 28, right: 28, bottom: 10),
-                  child: TextFormField(
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      // errorBorder:
-                      border: OutlineInputBorder(),
-                      hintText: 'eg: octavia@123',
-                      labelText: 'conform password',
-                      fillColor: Colors.grey,
-                      prefixIcon: Icon(Icons.password_outlined),
-                      suffixIconColor: Colors.blue,
-                    ),
+                  const SizedBox(
+                    height: 35,
                   ),
-                ),
-                const SizedBox(height: 7),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Or register via Social Accounts?"),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
+                  Container(
+                    alignment: Alignment.center,
+                    padding:
+                        const EdgeInsets.only(left: 28, right: 28, bottom: 10),
+                    child: TextFormField(
+                      controller: emailController,
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'pls enter some data';
+                        }
+                        return null;
                       },
-                      child: const Text(
-                        'REGISTER',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      decoration: const InputDecoration(
+                        // errorBorder:
+                        border: OutlineInputBorder(),
+                        hintText: 'eg: octavia123@gmail.com',
+                        labelText: 'user email',
+                        fillColor: Colors.grey,
+                        prefixIcon: Icon(Icons.email_outlined),
+                        suffixIconColor: Colors.blue,
                       ),
                     ),
-                  ],
-                ),
-                ElevatedButton(
-                    style: ButtonStyle(
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(18.0),
-                                    side: BorderSide(color: Colors.white)))),
-                    onPressed: () {
-                      //go to screen_home with name and email.
-                    //  Navigator.push(context, MaterialPageRoute(builder: (context) => screen_home(_userData, accessToken)));
-                    },
-                    child: const Text("SignUp")),
-                       Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("have an account?"),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => screen_login()));
+                  ),
+                  Container(
+                    alignment: Alignment.center,
+                    padding:
+                        const EdgeInsets.only(left: 28, right: 28, bottom: 10),
+                    child: TextFormField(
+                      controller: passController,
+                      obscureText: true,
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'pls enter some data';
+                        }
+                        if (value.length < 4) {
+                          return 'password must be atleast 4 letters';
+                        }
+                        return null;
                       },
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      decoration: const InputDecoration(
+                        // errorBorder:
+                        border: OutlineInputBorder(),
+                        hintText: 'eg: octavia@123',
+                        labelText: 'password',
+                        fillColor: Colors.grey,
+                        prefixIcon: Icon(Icons.password_outlined),
+                        suffixIconColor: Colors.blue,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  Container(
+                    alignment: Alignment.center,
+                    padding:
+                        const EdgeInsets.only(left: 28, right: 28, bottom: 10),
+                    child: TextFormField(
+                      obscureText: true,
+                      // validator: (value) {
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'pls enter some data';
+                        }
+                        if (value != passController.text)
+                          return 'password not match';
+                        return null;
+                      },
 
-              ],
+                      decoration: const InputDecoration(
+                        // errorBorder:
+                        border: OutlineInputBorder(),
+                        hintText: 'eg: octavia@123',
+                        labelText: 'conform password',
+                        fillColor: Colors.grey,
+                        prefixIcon: Icon(Icons.password_outlined),
+                        suffixIconColor: Colors.blue,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Or register via Social Accounts?"),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          'REGISTER',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, color: Colors.pink),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 28, right: 28),
+                    child: GestureDetector(
+                      onTap: () {
+                        //  go to screen_home with name and email.
+                        //  Navigator.push(context, MaterialPageRoute(builder: (context) => screen_home(_userData, accessToken)));
+                        if (_formKey.currentState!.validate()) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Processing Data')),
+                          );
+                          login(emailController.text.toString(),
+                              passController.text.toString(), context);
+                        }
+                        // if(status)
+                        // {
+
+                        // }
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius:
+                                BorderRadius.all(const Radius.circular(15)),
+                            color: Colors.pink.shade700),
+                        height: 33,
+                        //  color: Colors.pink.shade700,
+                        alignment: Alignment.center,
+                        child: const Text(
+                          "SignUp and Proceed",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("have an account?"),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => screen_login()));
+                        },
+                        child: const Text(
+                          'Login',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, color: Colors.pink),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ));

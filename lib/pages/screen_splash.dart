@@ -18,70 +18,44 @@ class _screen_splashState extends State<screen_splash> {
           child: Padding(
               padding: EdgeInsets.zero,
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                      alignment: Alignment.topLeft,
-                      child: Image.asset(
-                        "images/dementia_login_whi.png",
-                        height: 200,
-                      )),
-                  const Text(
-                    "Dementia\n Health Care",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
-                  ),
-                  Image.asset(
-                    "images/wecome.jpg",
-                    height: 180,
+                  Center(
+                    child: Image.asset(
+                      "images/Dementia-1-removebg-preview.jpg",
+                      height: 280,
+                    ),
                   ),
                   const SizedBox(
-                    height: 150,
+                    height: 230,
                   ),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                   //   notify();
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const screen_login(),
-                          ));
-                    },
-                    icon: const Icon(Icons.follow_the_signs_rounded),
-                    label: const Text("Gets Start!"),
-                    style: ButtonStyle(
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                const RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(20)),
-                                    side: BorderSide(color: Colors.white)))),
-                  ),
-                  //    ElevatedButton.icon(
-                  // style: ElevatedButton.styleFrom(primary: Colors.cyan,),
-                  // onPressed: () {
-                  //   //logout --by login with facebook
-                  // //  _logOut(context);
-                  // },
-                  // icon: Icon(Icons.logout),
-                  // label: Text("LogOut")),
+                  Column(
+                    children: [
+                      const Text(
+                        "Get's Start!",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: Colors.pink),
+                      ),
+                      // Icon(Icons.follow_the_signs_rounded)
+                      IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => screen_login(),
+                              ));
+                        },
+                        icon: Icon(Icons.read_more_rounded),
+                        iconSize: 38,
+                        color: Colors.pink,
+                      ),
+                    ],
+                  )
                 ],
               )),
         ));
   }
-  //fun used to display notifications--using awesome notification
-//   void notify() async{
-//      String timezom = await AwesomeNotifications().getLocalTimeZoneIdentifier(); //get time zone you are in
-
-// AwesomeNotifications().createNotification(
-//       content: NotificationContent(
-//         id: 1,
-//         channelKey: 'key1',
-//         title: 'This is Notification title',
-//         body: 'This is Body of Noti',
-//      //   bigPicture: 'https://protocoderspoint.com/wp-content/uploads/2021/05/Monitize-flutter-app-with-google-admob-min-741x486.png',
-//      //   notificationLayout: NotificationLayout.BigPicture
-//       ),
-//    schedule: NotificationInterval(interval: 2,timeZone: timezom,repeats: true),
-//   );
-//   }
 }

@@ -1,33 +1,42 @@
 import 'dart:async';
-
+import 'dart:developer';
+import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_4/consts/constands.dart';
 import 'package:flutter_application_4/local_db/db_functions.dart';
+import 'package:flutter_application_4/pages/MyLocation.dart';
+import 'package:flutter_application_4/pages/screeen_about.dart';
 import 'package:flutter_application_4/pages/screen_login.dart';
+import 'package:flutter_application_4/pages/screen_qus.dart';
 import 'package:flutter_application_4/pages/screen_symptoms.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'dart:convert';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_application_4/consts/constands.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 
 class screen_home extends StatefulWidget {
-  screen_home(this._userData, this.accessToken, this.user);
+  screen_home(this.userData, this.accessToken, this.user, [String? email]);
   var dt = DateTime.now();
 
-  Map<String, dynamic>? _userData;
+  Map<String, dynamic>? userData;
   AccessToken? accessToken;
   //login with google-data receving
   GoogleSignInAccount? user;
+  String _contactText = '';
 
   @override
   State<screen_home> createState() => _screen_homeState();
 }
 
 class _screen_homeState extends State<screen_home> {
+  static const myColor = Colors.pinkAccent;
+  static const myColors = Colors.pinkAccent;
   bool isClicked = true;
-     var dt = DateTime.now();
-    // var today = dt.da
+  var dt = DateTime.now();
+
+  String? name;
+  // var today = dt.da
   //screen_home(Map<String, dynamic>? userData, AccessToken? accessToken, {Key? key}) : super(key: key);
   String prettyPrint(Map json) {
     JsonEncoder encoder = const JsonEncoder.withIndent('  ');
@@ -36,7 +45,7 @@ class _screen_homeState extends State<screen_home> {
   }
 
   void checking() {
-    if (widget._userData == null) {
+    if (widget.userData == null) {
       // GoogleSignInAccount? user;
       // String _contactText = '';
       // GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -49,43 +58,38 @@ class _screen_homeState extends State<screen_home> {
     }
   }
 
-  String _contactText = '';
-
   GoogleSignIn _googleSignIn = GoogleSignIn();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    
   }
 
   //function to display current date and time
-  void datecheking(){
+  void datecheking() {
     var dt = DateTime.now();
     //print(dt.day);
     var today = dt.day;
-   
-  
-    // if(today == lst){
-    //   print('dates are equal');
-    // }
   }
 
+  _launchURL() async {
+    const url =
+        'https://www.nursingtimes.net/clinical-archive/neurology/enhancing-healthcare-assistants-dementia-role-23-02-2015/';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
 
   //through facebook login-info
   @override
   Widget build(BuildContext context) {
-    //created for checking if the user is clicked the emojis.
-    //  bool isClicked = true;
-    //getAllData() --used to display all datas from the local database.
-    getAllData();
-    print("in home page");
-    if (widget._userData != null) {
+    if (widget.userData != null) {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: color.myColorS,
-          title: Text(
+          title: const Text(
             "Dementia Care",
             style: TextStyle(fontStyle: FontStyle.italic),
           ),
@@ -96,8 +100,8 @@ class _screen_homeState extends State<screen_home> {
             children: [
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.all(20),
-                color: color.myColorS,
+                padding: const EdgeInsets.all(20),
+                color: myColor,
                 child: Center(
                   child: Column(
                     children: [
@@ -109,18 +113,1268 @@ class _screen_homeState extends State<screen_home> {
                           shape: BoxShape.circle,
                           image: DecorationImage(
                             image: NetworkImage(
-                                widget._userData?['picture']['data']['url']),
+                                widget.userData?['picture']['data']['url']),
                             fit: BoxFit.fill,
                           ),
                         ),
                       ),
                       Text(
-                        widget._userData!['email'],
+                        widget.userData!['email'],
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, color: Colors.white),
                       ),
-                      Text(widget._userData!['name'],
+                      Text(widget.userData!['name'],
                           style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              color: Colors.white))
+                    ],
+                  ),
+                ),
+              ),
+              // Text("sample"),
+              const ListTile(
+                leading: Icon(
+                  Icons.account_circle_outlined,
+                  color: Colors.black,
+                ),
+                title: Text(
+                  "Profile ",
+                  style: TextStyle(
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              const ListTile(
+                leading: Icon(
+                  Icons.settings_accessibility_outlined,
+                  color: Colors.black,
+                ),
+                title: Text(
+                  "Settings ",
+                  style: TextStyle(
+                    fontSize: 15,
+                  ),
+                ),
+                onTap: null,
+                focusColor: Colors.redAccent,
+                selectedTileColor: Colors.redAccent,
+              ),
+
+              verticalspace(280),
+              const Text("LOGOUT"),
+              IconButton(
+                onPressed: () {
+                  _logOut(context);
+                },
+                icon: const Icon(Icons.logout_outlined),
+                color: Colors.pink.shade700,
+                iconSize: 28,
+              )
+            ],
+          ),
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                width: MediaQuery.of(context).size.width,
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                      bottomRight: Radius.elliptical(30, 35),
+                      bottomLeft: Radius.elliptical(30, 35)),
+                  color: Colors.white,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 10), //lfirst container
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        "images/Dementia-1-removebg-preview.jpg",
+                        height: 160,
+                      ),
+                      verticalspace(10),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Welcome ",
+                            style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w500,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.black),
+                          ),
+                          widget.accessToken != null
+                              ? Text(
+                                  widget.userData!['name'],
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.pink.shade700),
+                                )
+                              : const Text("No Named!"),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 8, right: 8),
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadiusDirectional.only(
+                          topStart: Radius.circular(12),
+                          topEnd: Radius.circular(12),
+                          bottomEnd: Radius.circular(30),
+                          bottomStart: Radius.circular(30)),
+                      color: Colors.white),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        //-->Scrollable listview
+                        const Text("More About me",
+                            style: TextStyle(
+                                fontWeight: FontWeight.w300,
+                                fontStyle: FontStyle.italic)),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 160,
+                                // color: Colors.blueGrey,
+                                child: Column(
+                                  children: [
+                                    ClipRRect(
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: AspectRatio(
+                                          aspectRatio: 4 / 4,
+                                          child: Material(
+                                              child: InkWell(
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              const screen_about(),
+                                                        ));
+                                                  },
+                                                  child: Image.network(
+                                                    'https://plus.unsplash.com/premium_photo-1658506864415-f79c6ec9f44e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2069&q=80',
+                                                    fit: BoxFit.cover,
+                                                  ))),
+                                        )),
+                                    horizontalspace(3),
+                                    const Text("About ",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                              horizontalspace(10),
+                              Container(
+                                // height: 180,
+                                width: 160,
+
+                                child: Column(
+                                  children: [
+                                    ClipRRect(
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: AspectRatio(
+                                          aspectRatio: 4 / 4,
+                                          child: Material(
+                                              child: InkWell(
+                                            onTap: () {
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        const screen_about(),
+                                                  ));
+                                            },
+                                            child: Image.network(
+                                              'https://www.littlenecknursing.com/wp-content/uploads/2020/07/Alzheimer%E2%80%99s-Dementia-Care-.jpg',
+                                              fit: BoxFit.cover,
+                                            ),
+                                          )),
+                                        )),
+                                    horizontalspace(3),
+                                    const Text("my favorites",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                              horizontalspace(10),
+                              Container(
+                                // height: 180,
+                                width: 160,
+
+                                child: Column(
+                                  children: [
+                                    ClipRRect(
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: AspectRatio(
+                                          aspectRatio: 4 / 4,
+                                          child: Material(
+                                              child: InkWell(
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              screen_about(),
+                                                        ));
+                                                  },
+                                                  child: Image.network(
+                                                    'https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
+                                                    fit: BoxFit.cover,
+                                                  ))),
+                                        )),
+                                    horizontalspace(3),
+                                    const Text(
+                                      "medicine",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              horizontalspace(10),
+                              Container(
+                                // height: 180,
+                                width: 160,
+
+                                child: Column(
+                                  children: [
+                                    ClipRRect(
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: AspectRatio(
+                                          aspectRatio: 4 / 4,
+                                          child: Material(
+                                              child: InkWell(
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              // MyLocation(),
+                                                              screen_about(),
+                                                        ));
+                                                  },
+                                                  child: Image.network(
+                                                    'https://plus.unsplash.com/premium_photo-1664444190530-de772e83f7bc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1063&q=80',
+                                                    fit: BoxFit.cover,
+                                                  ))),
+                                        )),
+                                    horizontalspace(3),
+                                    const Text("more about",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                              horizontalspace(10),
+                            ],
+                          ),
+                        ),
+
+                        //emoji capture--daily route
+
+                        //options panel-->btn for asscess symptoms,posthealt related issues,
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width,
+                            //  height: 200,
+                            decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                color: Colors.white),
+                            child: Padding(
+                              padding: const EdgeInsets.all(13),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  ElevatedButton(
+                                      child: const Text(
+                                        'Dementia Related Question',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const screen_symptoms()));
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        primary: myColor,
+                                        // Background color
+                                        shadowColor: Colors.black,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                      )),
+                                  ElevatedButton(
+                                      child: const Text('Access My Symptoms',
+                                          style:
+                                              TextStyle(color: Colors.white)),
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  screen_qus(),
+                                            ));
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        primary: myColor, // Background color
+                                        shadowColor: Colors.black,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                      )),
+                                  ElevatedButton(
+                                      child: const Text(
+                                          'Entroll in a Care guide',
+                                          style:
+                                              TextStyle(color: Colors.white)),
+                                      onPressed: () {
+                                        _launchURL();
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        primary: myColor, // Background color
+                                        shadowColor: Colors.black,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                      )),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            isClicked
+                                ? const Text(
+                                    'Have a get-together?click,',
+                                    style: TextStyle(
+                                        fontSize: 22,
+                                        fontStyle: FontStyle.italic,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.pink),
+                                  )
+                                : const Text(
+                                    'Thanks!..\nSuccessfully updated.',
+                                    style: TextStyle(
+                                        fontSize: 22,
+                                        fontStyle: FontStyle.italic,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.pink),
+                                  ),
+                            IconButton(
+                              onPressed: () {
+                                bottomSheet(context);
+                              },
+                              icon: const Icon(Icons.next_plan_outlined),
+                              iconSize: 25,
+                            )
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      //page for google login -->under constraction
+      //# google login
+    }
+    if (widget.user != null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            "Dementia Care",
+            style: const TextStyle(fontStyle: FontStyle.italic),
+          ),
+          centerTitle: true,
+        ),
+        drawer: Drawer(
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                color: myColor,
+                child: Center(
+                  child: Column(
+                    children: [
+                      //  Container(
+                      //  width: 100,
+                      //   height: 100,
+                      //   margin: const EdgeInsets.only(top: 30, bottom: 27),
+                      //   decoration: const BoxDecoration(
+                      //     shape: BoxShape.circle,
+                      //     image: DecorationImage(
+                      //       image: NetworkImage(
+                      //           "https:www.google.com/url?sa=i&url=https%3A%2F%2Fwww.pngitem.com%2Fmiddle%2FhmbJbbw_computer-icons-user-profile-new-user-icon-png%2F&psig=AOvVaw0DT-IcqPVD_eUuc_mYGm7g&ust=1663868751338000&source=images&cd=vfe&ved=0CAwQjRxqFwoTCNiqkfDfp_oCFQAAAAAdAAAAABAD"),
+                      //       fit: BoxFit.fill,
+                      //     ),
+                      //   ),
+                      // ),
+                      Text(
+                        widget.user!.email,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      //  String? widget.user!.displayName;
+
+                      // widget.user!.displayName != null ?
+                      // Text(widget.user!.displayName) : const Text("data"),
+                    ],
+                  ),
+                ),
+              ),
+              // Text("sample"),
+              const ListTile(
+                leading: Icon(
+                  Icons.account_circle_outlined,
+                  color: Colors.black,
+                ),
+                title: Text(
+                  "Profile ",
+                  style: TextStyle(
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              const ListTile(
+                leading: Icon(
+                  Icons.settings_accessibility_outlined,
+                  color: Colors.black,
+                ),
+                title: Text(
+                  "Settings ",
+                  style: TextStyle(
+                    fontSize: 15,
+                  ),
+                ),
+                onTap: null,
+                focusColor: Colors.redAccent,
+                selectedTileColor: Colors.redAccent,
+              ),
+              const SizedBox(
+                height: 280,
+              ),
+              const Text("LOGOUT"),
+              IconButton(
+                onPressed: () {
+                  _handleSignOut(context);
+                },
+                icon: const Icon(Icons.logout_outlined),
+                color: Colors.pink.shade700,
+                iconSize: 28,
+              )
+            ],
+          ),
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                width: MediaQuery.of(context).size.width,
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                      bottomRight: Radius.elliptical(30, 35),
+                      bottomLeft: Radius.elliptical(30, 35)),
+                  color: Colors.white,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 10), //lfirst container
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        "images/Dementia-1-removebg-preview.jpg",
+                        height: 160,
+                      ),
+                      const SizedBox(height: 10),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Welcome ",
+                            style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.black),
+                          ),
+                          widget.accessToken != null
+                              ? Text(
+                                  widget.user!.email,
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.pink.shade700),
+                                )
+                              : const Text("NO AccessTokenFound!"),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              //  SizedBox(height: 2),
+              Padding(
+                padding: const EdgeInsets.only(left: 8, right: 8),
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  // height: 100,
+                  // color: Colors.cyan,
+                  decoration: const BoxDecoration(
+                      borderRadius: BorderRadiusDirectional.only(
+                          topStart: Radius.circular(12),
+                          topEnd: Radius.circular(12),
+                          bottomEnd: Radius.circular(30),
+                          bottomStart: Radius.circular(30)),
+                      color: Colors.grey),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        const Text(
+                          "About'",
+                          style: TextStyle(
+                              fontSize: 17, fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          "Patient Name : --\n"
+                          "Contact Info : --\n"
+                          "Health Status: --\n"
+                          "Health Records: --\n"
+                          "This patient also had an additional risk factor for AD, Among other mechanisms, its presence reduces the health power!",
+                          style: TextStyle(
+                              fontStyle: FontStyle.italic,
+                              color: Colors.pink.shade700),
+                        ),
+                        //emoji capture--daily route
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                              padding: const EdgeInsets.all(10),
+                              width: MediaQuery.of(context).size.width,
+                              //  color: Colors.lightBlue,
+                              // height: 150,
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20)),
+                                color: myColor,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 5),
+                                child: Column(
+                                  children: [
+                                    //  Text(
+                                    //   "Hi..How Do you feel Today",
+                                    //   style: TextStyle(
+                                    //       fontSize: 15,
+                                    //       fontStyle: FontStyle.italic,
+                                    //       fontWeight: FontWeight.w300,
+                                    //       color: Colors.white),
+                                    // ),
+                                    isClicked
+                                        ? const Text(
+                                            'Hy..How do you feel Today? Click one',
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                fontStyle: FontStyle.italic,
+                                                fontWeight: FontWeight.w400,
+                                                color: Colors.white),
+                                          )
+                                        : const Text(
+                                            'Thanks!..Successfully updated.',
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                fontStyle: FontStyle.italic,
+                                                fontWeight: FontWeight.w400,
+                                                color: Colors.white),
+                                          ),
+
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        IconButton(
+                                            iconSize: 41,
+                                            onPressed: () {
+                                              showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                      scrollable: true,
+                                                      title: const Text(
+                                                        'Feeling veryGood!',
+                                                        style: const TextStyle(
+                                                            color: Colors.pink),
+                                                      ),
+                                                      content: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            const Icon(
+                                                                Icons
+                                                                    .sentiment_very_satisfied_outlined,
+                                                                size: 33),
+                                                            Container(
+                                                              width:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
+                                                              //  height: 20,
+                                                              //  color: color.myColor,
+                                                              child:
+                                                                  const SingleChildScrollView(
+                                                                child: Text(
+                                                                    "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      actions: [
+                                                        ElevatedButton(
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              primary: Colors
+                                                                  .pink
+                                                                  .shade700,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            50),
+                                                                //border radius equal to or more than 50% of width
+                                                              ),
+                                                            ),
+                                                            child: const Text(
+                                                                "Cancel"),
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context);
+                                                            }),
+                                                        //if user clicked ones--disble the btn.and also pass the value to local_db
+                                                        ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            primary: Colors
+                                                                .pink.shade700,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          50),
+                                                              //border radius equal to or more than 50% of width
+                                                            ),
+                                                          ),
+                                                          onPressed: isClicked
+                                                              ? () {
+                                                                  {
+                                                                    setState(
+                                                                        () {
+                                                                      var dt =
+                                                                          DateTime
+                                                                              .now();
+                                                                      insertData(
+                                                                          'Very_Good',
+                                                                          dt.day); //also we have to pass current date.
+                                                                      isClicked =
+                                                                          false;
+                                                                    });
+                                                                  }
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                }
+                                                              : null,
+                                                          child: const Text(
+                                                              "Done"),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  });
+                                            },
+                                            icon: const Icon(Icons
+                                                .sentiment_very_satisfied_outlined)),
+                                        IconButton(
+                                            iconSize: 41,
+                                            onPressed: () {
+                                              showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                      scrollable: true,
+                                                      title: const Text(
+                                                        'Feeling Good!',
+                                                        style: TextStyle(
+                                                            color: Colors.pink),
+                                                      ),
+                                                      content: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            const Icon(
+                                                                Icons
+                                                                    .sentiment_satisfied_outlined,
+                                                                size: 33),
+                                                            Container(
+                                                              width:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
+                                                              //  height: 20,
+                                                              //  color: color.myColor,
+                                                              child:
+                                                                  const SingleChildScrollView(
+                                                                child: Text(
+                                                                    "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      actions: [
+                                                        ElevatedButton(
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              primary: Colors
+                                                                  .pink
+                                                                  .shade700,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            50),
+                                                                //border radius equal to or more than 50% of width
+                                                              ),
+                                                            ),
+                                                            child: const Text(
+                                                                "Cancel"),
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context);
+                                                            }),
+                                                        ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            primary: Colors
+                                                                .pink.shade700,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          50),
+                                                              //border radius equal to or more than 50% of width
+                                                            ),
+                                                          ),
+                                                          onPressed: isClicked
+                                                              ? () {
+                                                                  {
+                                                                    setState(
+                                                                        () {
+                                                                      var dt =
+                                                                          DateTime
+                                                                              .now();
+                                                                      insertData(
+                                                                          'Good',
+                                                                          dt.day);
+                                                                      isClicked =
+                                                                          false;
+                                                                    });
+                                                                  }
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                }
+                                                              : null,
+                                                          child: const Text(
+                                                              "Done"),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  });
+                                            },
+                                            icon: const Icon(Icons
+                                                .sentiment_satisfied_outlined)),
+                                        IconButton(
+                                            iconSize: 41,
+                                            onPressed: () {
+                                              showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                      scrollable: true,
+                                                      title: Text(
+                                                        'Feeling Nothing!',
+                                                        style: TextStyle(
+                                                            color: Colors
+                                                                .pink.shade700),
+                                                      ),
+                                                      content: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            const Icon(
+                                                                Icons
+                                                                    .sentiment_neutral_outlined,
+                                                                size: 33),
+                                                            Container(
+                                                              width:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
+                                                              //  height: 20,
+                                                              //  color: color.myColor,
+                                                              child:
+                                                                  const SingleChildScrollView(
+                                                                child: Text(
+                                                                    "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      actions: [
+                                                        ElevatedButton(
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              primary: Colors
+                                                                  .pink
+                                                                  .shade700,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            50),
+                                                                //border radius equal to or more than 50% of width
+                                                              ),
+                                                            ),
+                                                            child: const Text(
+                                                                "Cancel"),
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context);
+                                                            }),
+                                                        ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            primary: Colors
+                                                                .pink.shade700,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          50),
+                                                              //border radius equal to or more than 50% of width
+                                                            ),
+                                                          ),
+                                                          onPressed: isClicked
+                                                              ? () {
+                                                                  {
+                                                                    setState(
+                                                                        () {
+                                                                      var dt =
+                                                                          DateTime
+                                                                              .now();
+                                                                      insertData(
+                                                                          'Nothing',
+                                                                          dt.day);
+                                                                      isClicked =
+                                                                          false;
+                                                                    });
+                                                                  }
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                }
+                                                              : null,
+                                                          child: const Text(
+                                                              "Done"),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  });
+                                            },
+                                            icon: const Icon(Icons
+                                                .sentiment_neutral_outlined)),
+                                        IconButton(
+                                            iconSize: 41,
+                                            onPressed: () {
+                                              showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                      scrollable: true,
+                                                      title: const Text(
+                                                        'Feeling bad!',
+                                                        style: TextStyle(
+                                                            color: Colors.pink),
+                                                      ),
+                                                      content: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            const Icon(
+                                                                Icons
+                                                                    .sentiment_dissatisfied_outlined,
+                                                                size: 33),
+                                                            Container(
+                                                              width:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
+                                                              //  height: 20,
+                                                              //  color: color.myColor,
+                                                              child:
+                                                                  const SingleChildScrollView(
+                                                                child: Text(
+                                                                    "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      actions: [
+                                                        ElevatedButton(
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              primary: Colors
+                                                                  .pink
+                                                                  .shade700,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            50),
+                                                                //border radius equal to or more than 50% of width
+                                                              ),
+                                                            ),
+                                                            child: const Text(
+                                                                "Cancel"),
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context);
+                                                            }),
+                                                        ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            primary: Colors
+                                                                .pink.shade700,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          50),
+                                                              //border radius equal to or more than 50% of width
+                                                            ),
+                                                          ),
+                                                          onPressed: isClicked
+                                                              ? () {
+                                                                  {
+                                                                    setState(
+                                                                        () {
+                                                                      var dt =
+                                                                          DateTime
+                                                                              .now();
+                                                                      //print(dt.year);
+                                                                      insertData(
+                                                                          'Bad',
+                                                                          dt.day);
+                                                                      isClicked =
+                                                                          false;
+                                                                    });
+                                                                  }
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                }
+                                                              : null,
+                                                          child: const Text(
+                                                              "Done"),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  });
+                                            },
+                                            icon: const Icon(Icons
+                                                .sentiment_dissatisfied_rounded)),
+                                        IconButton(
+                                            iconSize: 41,
+                                            highlightColor: Colors.yellowAccent,
+                                            onPressed: () {
+                                              print("button cliked!");
+                                              showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                      scrollable: true,
+                                                      title: const Text(
+                                                        'Feeling veryBad!',
+                                                        style: TextStyle(
+                                                            color: Colors.pink),
+                                                      ),
+                                                      content: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            const Icon(
+                                                                Icons
+                                                                    .sentiment_very_dissatisfied_outlined,
+                                                                size: 33),
+                                                            Container(
+                                                              width:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
+                                                              //  height: 20,
+                                                              //  color: color.myColor,
+                                                              child:
+                                                                  const SingleChildScrollView(
+                                                                child: Text(
+                                                                    "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      actions: [
+                                                        ElevatedButton(
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              primary: Colors
+                                                                  .pink
+                                                                  .shade700,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            50),
+                                                                //border radius equal to or more than 50% of width
+                                                              ),
+                                                            ),
+                                                            child: const Text(
+                                                                "Cancel"),
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context);
+                                                            }),
+                                                        ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            primary: Colors
+                                                                .pink.shade700,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          50),
+                                                              //border radius equal to or more than 50% of width
+                                                            ),
+                                                          ),
+                                                          onPressed: isClicked
+                                                              ? () {
+                                                                  {
+                                                                    setState(
+                                                                        () {
+                                                                      //  var dt = DateTime.now();
+                                                                      insertData(
+                                                                          'very_Bad',
+                                                                          dt.day);
+                                                                      isClicked =
+                                                                          false;
+                                                                    });
+                                                                  }
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                }
+                                                              : null,
+                                                          child: const Text(
+                                                              "Done"),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  });
+                                            },
+                                            icon: const Icon(Icons
+                                                .sentiment_very_dissatisfied_outlined)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              )),
+                        ),
+                        //options panel-->btn for asscess symptoms,posthealt related issues,
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width,
+                            //  height: 200,
+                            decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                color: Colors.white),
+                            child: Padding(
+                              padding: const EdgeInsets.all(13),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  ElevatedButton(
+                                      child: const Text(
+                                        'Dementia Related Question',
+                                        style: TextStyle(color: Colors.white60),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const screen_symptoms()));
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        primary: myColor,
+                                        // Background color
+                                        shadowColor: Colors.black,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                      )),
+                                  ElevatedButton(
+                                      child: const Text('Access My Symptoms',
+                                          style:
+                                              TextStyle(color: Colors.white60)),
+                                      onPressed: () {},
+                                      style: ElevatedButton.styleFrom(
+                                        primary: myColor, // Background color
+                                        shadowColor: Colors.black,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                      )),
+                                  ElevatedButton(
+                                      child: const Text(
+                                          'Entroll in a Care guide',
+                                          style:
+                                              TextStyle(color: Colors.white60)),
+                                      onPressed: () {},
+                                      style: ElevatedButton.styleFrom(
+                                        primary: myColor, // Background color
+                                        shadowColor: Colors.black,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                      )),
+                                ],
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // retrun page for login with username and password!
+    else {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            "Dementia Care",
+            style: TextStyle(fontStyle: FontStyle.italic),
+          ),
+          centerTitle: true,
+        ),
+        drawer: Drawer(
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                color: myColor,
+                child: Center(
+                  child: Column(
+                    children: [
+                      // Container(
+                      //   width: 100,
+                      //   height: 100,
+                      //   margin: const EdgeInsets.only(top: 30, bottom: 27),
+                      //   decoration: BoxDecoration(
+                      //     shape: BoxShape.circle,
+                      //     image: DecorationImage(
+                      //       image: NetworkImage(
+                      //           widget.userData?['picture']['data']['url']),
+                      //       fit: BoxFit.fill,
+                      //     ),
+                      //   ),
+                      // ),
+                      const Text(
+                        "widget.userData!['email']",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      const Text("widget.userData!['name']",
+                          style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
                               color: Colors.white))
@@ -159,1127 +1413,765 @@ class _screen_homeState extends State<screen_home> {
               const SizedBox(
                 height: 280,
               ),
-
-              ElevatedButton.icon(
-                  style: ButtonStyle(
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18.0),
-                              side: const BorderSide(color: Colors.white)))),
-                  onPressed: () {
-                    _logOut(context);
-                  },
-                  icon: const Icon(Icons.logout_rounded),
-                  label: const Text("LogOut")),
-            ],
-          ),
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                width: MediaQuery.of(context).size.width,
-                //  width: 500,
-                // height: 250,
-                // color:Colors.blue,
-                decoration: BoxDecoration(
-                  borderRadius:
-                      BorderRadius.only(bottomRight: Radius.circular(60)),
-                  color: color.myColorS,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 220, top: 15),
-                        child: Container(
-                          //  padding: EdgeInsets.all(30),
-                          width: 70,
-                          height: 70,
-                          // margin: const EdgeInsets.only(top: 30, bottom: 27),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                              image: NetworkImage(
-                                  widget._userData?['picture']['data']['url']),
-                              fit: BoxFit.fill,
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Row(
-                        // crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            "Hello ' ",
-                            style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                fontStyle: FontStyle.italic,
-                                color: Colors.black),
-                          ),
-                          widget.accessToken != null
-                              ? Text(
-                                  widget._userData!['name'],
-                                  style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white),
-                                )
-                              : Text("NO AccessToken Found!"),
-                          //  accessToken != null
-                          //   ? Text(_userData!['email'] ,style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.white),)
-                          //   : Text("NO AccessToken Found!"),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 30),
-                        child: Column(
-                          // mainAxisAlignment: MainAxisAlignment.start,
-                          //  crossAxisAlignment: CrossAxisAlignment.start,
-
-                          children: [
-                            widget.accessToken != null
-                                ? Text(
-                                    widget._userData!['email'],
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white),
-                                  )
-                                : Text("NO AccessToken Found!"),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            const Text(
-                              "“The cheerful mind perseveres, and the strong mind hews its way through a thousand difficulties.” ",
-                              style: TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                  fontWeight: FontWeight.w300,
-                                  color: Colors.black),
-                            )
-                          ],
-                        ),
-                      ),
-                      // Container(
-                      //   color: Colors.amberAccent,
-                      //   width: 200,
-                      //   height: 200
-
-                      //   ,
-                      // )
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  // height: 100,
-                  // color: Colors.cyan,
-                  decoration: const BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.only(
-                          topStart: Radius.circular(30),
-                          bottomEnd: Radius.circular(30)),
-                      color: Colors.blueGrey),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        Text("About'",style: TextStyle(fontSize: 17,fontWeight: FontWeight.w500),),
-                        Text(
-                          "This patient also had an additional risk factor for AD, being a heterozygote for the apoЄ4 allele. Among other mechanisms, its presence reduces clearance of Aβ42 from the brain and increases glial activation\nHealth Status: -- \nHealth Records: --\n",
-                          style: TextStyle(
-                              fontStyle: FontStyle.italic, color: Colors.white),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                    padding: EdgeInsets.all(10),
-                    width: MediaQuery.of(context).size.width,
-                    //  color: Colors.lightBlue,
-                    // height: 150,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                      color: color.myColorS,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 5),
-                      child: Column(
-                        children: [
-                          //  Text(
-                          //   "Hi..How Do you feel Today",
-                          //   style: TextStyle(
-                          //       fontSize: 15,
-                          //       fontStyle: FontStyle.italic,
-                          //       fontWeight: FontWeight.w300,
-                          //       color: Colors.white),
-                          // ),
-                          isClicked
-                              ? Text(
-                                  'Hy..How do you feel Today?Click one',
-                                  style: TextStyle(
-                                      fontSize: 17,
-                                      fontStyle: FontStyle.italic,
-                                      fontWeight: FontWeight.w500,
-                                      color:Colors.white),
-                                )
-                              : Text('Thanks!..Successfully updated.',style: TextStyle(
-                                      fontSize: 17,
-                                      fontStyle: FontStyle.italic,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white),),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              IconButton(
-                                  iconSize: 41,
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            scrollable: true,
-                                            title: Text('Feeling veryGood!'),
-                                            content: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Column(
-                                                children: <Widget>[
-                                                  Icon(
-                                                      Icons
-                                                          .sentiment_very_satisfied_outlined,
-                                                      size: 33),
-                                                  Container(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                            .size
-                                                            .width,
-                                                    //  height: 20,
-                                                    //  color: color.myColor,
-                                                    child:
-                                                        const SingleChildScrollView(
-                                                      child: Text(
-                                                          "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            actions: [
-                                              ElevatedButton(
-                                                  child: Text("Cancel"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                              //if user clicked ones--disble the btn.and also pass the value to local_db
-                                              ElevatedButton(
-                                                onPressed: 
-                             isClicked ?                       () {
-                                                        {
-                                                          setState(() {
-                                                            var dt = DateTime.now();
-                                                            insertData(
-                                                                'Very_Good',dt.day);//also we have to pass current date.
-                                                            isClicked = false;
-                                                          });
-                                                        }
-                                                        Navigator.pop(context);
-                                                      }
-                                                    : null,
-                                                child: Text("Done"),
-                                              ),
-                                            ],
-                                          );
-                                        });
-                                  },
-                                  icon: Icon(
-                                      Icons.sentiment_very_satisfied_outlined)),
-                              IconButton(
-                                  iconSize: 41,
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            scrollable: true,
-                                            title: const Text('Feeling Good!'),
-                                            content: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Column(
-                                                children: <Widget>[
-                                                  const Icon(
-                                                      Icons
-                                                          .sentiment_satisfied_outlined,
-                                                      size: 33),
-                                                  Container(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                            .size
-                                                            .width,
-                                                    //  height: 20,
-                                                    //  color: color.myColor,
-                                                    child:
-                                                        const SingleChildScrollView(
-                                                      child: Text(
-                                                          "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            actions: [
-                                              ElevatedButton(
-                                                  child: Text("Cancel"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                              ElevatedButton(
-                                                onPressed: isClicked
-                                                    ? () {
-                                                        {
-                                                          setState(() {
-                                                            var dt = DateTime.now();
-                                                            insertData('Good',dt.day);
-                                                            isClicked = false;
-                                                          });
-                                                        }
-                                                        Navigator.pop(context);
-                                                      }
-                                                    : null,
-                                                child: Text("Done"),
-                                              ),
-                                            ],
-                                          );
-                                        });
-                                  },
-                                  icon:
-                                      Icon(Icons.sentiment_satisfied_outlined)),
-                              IconButton(
-                                  iconSize: 41,
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            scrollable: true,
-                                            title: Text('Feeling Nothing!'),
-                                            content: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Column(
-                                                children: <Widget>[
-                                                  Icon(
-                                                      Icons
-                                                          .sentiment_neutral_outlined,
-                                                      size: 33),
-                                                  Container(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                            .size
-                                                            .width,
-                                                    //  height: 20,
-                                                    //  color: color.myColor,
-                                                    child:
-                                                        const SingleChildScrollView(
-                                                      child: Text(
-                                                          "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            actions: [
-                                              ElevatedButton(
-                                                  child: Text("Cancel"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                              ElevatedButton(
-                                                onPressed: isClicked
-                                                    ? () {
-                                                        {
-                                                          setState(() {
-                                                            var dt = DateTime.now();
-                                                            insertData(
-                                                                'Nothing',dt.day);
-                                                            isClicked = false;
-                                                          });
-                                                        }
-                                                        Navigator.pop(context);
-                                                      }
-                                                    : null,
-                                                child: Text("Done"),
-                                              ),
-                                            ],
-                                          );
-                                        });
-                                  },
-                                  icon: const Icon(
-                                      Icons.sentiment_neutral_outlined)),
-                              IconButton(
-                                  iconSize: 41,
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            scrollable: true,
-                                            title: const Text('Feeling bad!'),
-                                            content: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Column(
-                                                children: <Widget>[
-                                                  const Icon(
-                                                      Icons
-                                                          .sentiment_dissatisfied_outlined,
-                                                      size: 33),
-                                                  Container(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                            .size
-                                                            .width,
-                                                    //  height: 20,
-                                                    //  color: color.myColor,
-                                                    child:
-                                                        const SingleChildScrollView(
-                                                      child: Text(
-                                                          "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            actions: [
-                                              ElevatedButton(
-                                                  child: Text("Cancel"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                              ElevatedButton(
-                                                onPressed: isClicked
-                                                    ? () {
-                                                        {
-                                                          setState(() {
-                                                            var dt = DateTime.now();
-                                                            //print(dt.year); 
-                                                            insertData('Bad',dt.day);
-                                                            isClicked = false;
-                                                          });
-                                                        }
-                                                        Navigator.pop(context);
-                                                      }
-                                                    : null,
-                                                child: Text("Done"),
-                                              ),
-                                            ],
-                                          );
-                                        });
-                                  },
-                                  icon: Icon(
-                                      Icons.sentiment_dissatisfied_rounded)),
-                              IconButton(
-                                  iconSize: 41,
-                                  highlightColor: Colors.yellowAccent,
-                                  onPressed: () {
-                                    print("button cliked!");
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            scrollable: true,
-                                            title:
-                                                const Text('Feeling veryBad!'),
-                                            content: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Column(
-                                                children: <Widget>[
-                                                  const Icon(
-                                                      Icons
-                                                          .sentiment_very_dissatisfied_outlined,
-                                                      size: 33),
-                                                  Container(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                            .size
-                                                            .width,
-                                                    //  height: 20,
-                                                    //  color: color.myColor,
-                                                    child:
-                                                        const SingleChildScrollView(
-                                                      child: Text(
-                                                          "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            actions: [
-                                              ElevatedButton(
-                                                  child: Text("Cancel"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                              ElevatedButton(
-                                                onPressed: isClicked
-                                                    ? () {
-                                                        {
-                                                          setState(() {
-                                                          //  var dt = DateTime.now();
-                                                            insertData(
-                                                                'very_Bad',dt.day);
-                                                            isClicked = false;
-                                                          });
-                                                        }
-                                                        Navigator.pop(context);
-                                                      }
-                                                    : null,
-                                                child: Text("Done"),
-                                              ),
-                                            ],
-                                          );
-                                        });
-                                  },
-                                  icon: Icon(Icons
-                                      .sentiment_very_dissatisfied_outlined)),
-                            ],
-                          ),
-                        ],
-                      ),
-                    )),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  //  height: 200,
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                    color: color.myColorS,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(13),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        ElevatedButton(
-                            child: const Text(
-                              'Access My Symptoms',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const screen_symptoms()));
-                            },
-                            style: ElevatedButton.styleFrom(
-                              primary: color.myColor, // Background color
-                            )),
-                        ElevatedButton(
-                            child: const Text('Post a health Qustion',
-                                style: TextStyle(color: Colors.black)),
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              primary: color.myColor, // Background color
-                            )),
-                        ElevatedButton(
-                            child: const Text('Entroll in a Care guide',
-                                style: TextStyle(color: Colors.black)),
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              primary: color.myColor, // Background color
-                            )),
-                      ],
-                    ),
-                  ),
-                ),
+              const Text("LOGOUT"),
+              IconButton(
+                onPressed: () {
+                  //  _logOut(context);
+                },
+                icon: const Icon(Icons.logout_outlined),
+                color: Colors.pink.shade700,
+                iconSize: 28,
               )
             ],
           ),
         ),
-      );
-    } else {
-      return Scaffold(
-        appBar: AppBar(
-          backgroundColor: color.myColorS,
-          title: Text(
-            "Dementia Care",
-            style: TextStyle(fontStyle: FontStyle.italic),
-          ),
-          centerTitle: true,
-        ),
-        drawer: Drawer(
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(20),
-                color: color.myColorS,
-                child: Center(
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 100,
-                        height: 100,
-                        margin: const EdgeInsets.only(top: 30, bottom: 27),
-                        //   decoration: BoxDecoration(
-                        //     shape: BoxShape.circle,
-                        //     // image: DecorationImage(
-                        //     //   image: NetworkImage(
-                        //     //     //  _userData?['picture']['data']['url']),
-                        //     //     ,
-                        //     //   fit: BoxFit.fill,
-                        //     // ),
-                        //  //   image: NetworkImage('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANwAAADcCAMAAAAshD+zAAABIFBMVEX////51bTOAAcN26Ab3abyt4v41bT507P/1bcX3aTKBQX/1bXKBgYH3J/+6sb62bn75dHwr7H52Lr+9e3QCQ//8Mz96MT98eb73rz//Pn63sT0xsf309T848D++PP727/zvpX87Nzt/fjeVVnrmJrVJCraQET64uLtoaPQDxXlen2T2a7n/PbH9+nmfYDkcXT2zc7pj5LXMDXhZWndTVDfW1/ZOT7aTULeX1PyvKHZQDnRJCDkdmX//9nrmYPmiHX1xJ5B47Wi8dvxuLn87u7uqKr0xKnso43iemvhaFv54OHzzLjzv6TWRjzljHrwspf/9tzj8OKC7M5m6sVb26nh1bSy9OF72azX+e+r2bGL7dJd579i2avO17bT17ah2bHdaX20AAAMKklEQVR4nO2ceV/ayhrHC8UkhJggAgY1WKq0cqx16QKCda9Lbyv3WKy1tfb9v4s7kwUSyDJJ5pmE3v7+7Dkfky/P/szAkyd/9Vf/96q93J5bf721tbXz8XT5LOm3oaj69s7qbis7VLm3u7qz9EcQLm01s27qvV1bTvrd4ulsZ9eVzDThi7WXSb9hdK25G82m1pvtpF8ympZfBKHp5ltdSvpFI2i9TMKGtTp11tsiRcPW25qq3Fl/G4INqbeW9BuTq0YUbg69nZrEuRqaDSXOuaTfmkxh4s2mrVrSLz6hs0/L26dz6+un25ZjvY7Gls2+SJNrfpp7/W63OWwbW7vvcEs1F5Utm22mpOadnW69b02+Xvl9cFvio/J60lxIyx7tcHztJI229Ja4+wivfxJFO3sDR4b1JkG2JSiHHOpdYmxzgB5pKSnPXIdHyyaVVdiwZbMfE2A7ZcSWLbOv5i9dqjaQmswnvCjNflSxTpkxmsYIYju+1sELnENlpmvNNaZs2ex7huNdja3hskyrHduIw2qxm13D73xii1kLvcyeLVv+xAhuJwE4ZqZLwCuR6dhE3ScGk46LXjOB+5gIW7ZZZwEXcc8aW6cs4EIebFATk5TyPiG4HoPRh+EkNyYGfvkpMbgteLjlZCoB0i483HZSbCxasKXE4LLwZ5LEcBJ1OPgmhXSn17ukHpyraYFr9T90aNtuF3zbQDaGt/oV9Zx20YCfx0ngxN65zPOVK5EyHfjymQBOaqsan8moPG3TgZ8kB8KJ0mFFRWwZvrJPOerAD7QC4ESpu1fhMroUpUcXDnww8IeTeodV7JK6ePmCruneJgkntS6VCmexYcfsUM0pTeha4F3nxPIVb0TbEE5VqTom+EjnCSd1z51o9B0T/ETEC07ar2j8GBt2zCuadNCFzqNxbh3Yg20kRW5TpIMext3hULvlhobDTuvSSyrQpz2uw6p04cGG6DSlSY0Ouoq7waF482LDdJxfygw1GEGvUVx2KGK3qniyIbrqec/bdq3LFrlhoeFctl8tXvM2nG47vuuZVaSD//SIUw50/3U2cWYsXfs4pUkne06uYvfDCnFCBb+1Mb5OR07pj4bpFDQheHif9FmWSccH8EXD+B1L6UIOhMtkuMqFR+BJVxWuck1GB945jx+s9jSOAA71KvwXd4IWp2Qqn31yzkjglhvrv9BoGhBxFp0mX7sS4L/AV1WSfRJ4zI2ly1ZpvFv2pOMqXMcl8sSeoqBOhsQ14Y+xHGfiYpvQcDqeWvncnsQzjV/ZawbhwZ+F/ON4sYvgXOnwzUq/LY0zNPWwJXBNeDjHLI5dKpQQ3vl+z2k+s1LqrumbV+CvPNuPH8U2SR0Yk1ZRLzqIb8SBPiLDuSt7Yzmn7Oj2GFxOtAWddB0BDqWWqqz097sYUMSMUsf8M3yVd05ILQccg8NVW9BJn/3bSm8pmlzN7B0cXrW/dLtf2rzp3bxWdTRjPXtuZnHx0lbpemrIkHMCqlUZqapVtZFVVcfs3rWPSyzuooyCLlLI2WRa3dHi8KrNdmLb/t15Jredh72z6DelRiZWtdGE1G6zzSe2a8DSgUwfDsWdauVMsWNb6zK5UtqQrUCQ+lrwu0agk/um6cSr0TmY2IFHqxV5uW0+sXWuQsCN1p3ivg3uEP4e9yL6YC9FGsnSB07RjJWZeLk/hJP6MjRdAz1b65tPbJLNchHoTMeUDkZwqI0pwrLVShl88GYUA7FbBYKzDoikvUsrcYodlLzmQeEaxuf6RaRR5vyk7WGqsjq0nHRQ5TOLoHBFA84IOrEDB5fRP8BeZQhX1js0UNOtGB9r34SrgLHpp19i54MFJ7aruKQ2ANn0kEP9knGoKF7BwWVUroVm9CEc8kr8r5AppW7AmeEOCpepdkWp/8FaaeIdGTBczXBLXj7Az5QuIbovU7iQ91Trpo61qwEtBovGk1UeD5HSISBcBn2AHVk2e0trV7MACVc0n1zFA7MZB0BCxeBCs+B6mtELgU50DePBxu0gERSOU7o8Z7ax1my1Asn2pG59rPiaQsi9Xlgp54rVo0ufjQ4dshI8GQad3oEBw2XUDFfVeyErnXDAe4YF47k8DgYRZpyziVN3zbkRPldiGcUgU71mAWfcjRO7RpvHwfbNT4amU8/LDOCMO5vWNgPccMNqIHdFeDhtr4yPgYw6AB1xWEaXwlcOReiEgpwfz6zStWE40AJuaV6fUNVzCWb5ZZfe5pnLDAZOidUwHtwF7S2xeHwVwGzyYOdUm3DYIb+UAOc5Q3j6aOmnZCvsfsIAl3LklwS3NOIJ1XDxEhfwFSZfWTVUw3RaswW02rPEaU2xpaDOa5HtLws28CZFAlrKWkJlTj8wZ8yGcuaiuge0Th8KTT0o4laA22VXLRR7sIWOl6+ly/8yKW8uWoO1HF7VJPj7wFALZ1Ny90VybNaIACQ0EzD5Xr+HisFvGENaH/yanp8WQOHUfqI/LWtuoKHEqFf2EqxfJlUFTIH6JYvp1E+gfslsyvESpF8m7JWoxYRjKyX/I+OLYHAJ50osuJSScDrRBdWCpcBwYKZLQcRhwSTMxFOloRqEYyYxfbuqTr+SpyLgDFEPO+YbIT816LKV0lAFRqJKt5guNtSG0Yu7FMWbpTqtPiw1edKhBg20lZTUtwnNxy94xTSlSadqMZuV1JrN0HyMyOMa6TWbqYWovllMWwFwU60RxXpF8DsmtLQQEo+bHjSs+UXyMxJuKhzSIZRalGBARZmOWJvQAs/543H4C+JT5ZA2PZs54ktefIhM4Y9mnqU+/bur/mxmZubZUaakTAAaZPp/n0qnNOF0Pt4OyCmlEm+QYU2pW87PjHR0hAIQESo4zIZgfwicbkBEeOQAw5pStxyD89CUwtUnzTSuZ0ewl+nhVMdZxMURh16K80wKdwpEqnNGaixlUHJEjJZw7PEc+necQBM/YIyoOmerahgSGbKklPSkyVn/jeE9SqoiOpdU/mS4lO1fiUW0ZE/6xkJU/YUD/uo3mP5ouMafDEe2oU33HtZTZCuwdJ57BInwWth0NpeEF6ems7kkPCifzhaF9MRnGoOuTrpynsZxlfy4YOpSSqhjyKmiqy0Uwx3SrTSmpE+ZbyxGubWxUlxI+dga2mQOlRYb82kFjGiyCQOmru7VY5nMKSVNBqwhk9H+6mo6DEjTZE5xCRsQmQz224EJGfD7v2Amc4q1AZ9v3hznc6UCCzZdK/9+vdl8zoBs88fP3FOk2YHAiI4r3OIn5n6efIcEe/7t6/FTS7N3AvBPaphsgpqbNR6ZP775BmPAVyeGyUZ0GwILtkJpMGt7au4rfb7vN04yne4eno4rCA42ne/HK5pomz/zE2hM6BDbwzgbxruhhvfqqxsZCzo3u1nWo8N2MumQI7rfkFllPN4cOv4WH+3VT2+0p3pWgTNeYZgnXfU1Ltumj9kMujuweifc+rIh48WLvBPXROKkexAKIB2m8Cvvz4YibzMOWyAaphuUADyTF+5ng9hi0f0gYUN0uUfanonS5MbTYDbUtESlI7KbQfeLbuBxgk+apEK3ScqGtUEz8HjhMSCV2JSL0k5/D8qTDs0ObmkFHicIvwNTiU3HEXrN4+A/66DL39MxHi/ckrqkqZ+h2W7CsWG8BzV+u4IySSiz6QrbioUKOIsudy8IsYyH0MKaDSsfMuxCOqWFN3iM45u8UNoIbTascI5JXAXG6fJ3pch4gnBPniSdCtNEPw+VKcfwNkqFCKGHPPI+gkeaOg4BR9iauNPpoRcWTxAeBwTtlqfITRfDcAbfAOGFcU5BuL0LbtH9RG66qBE3opvN/S4RdmTIH4XHB6JG0k/EpouWKsfx7m6FQrD5CkLpfhAbjTxhRqlxLprNP9wrvubjCqiubeQooJHXuvDNiYew+VDhK2Rc7YfcERktHyeN2EXYplDwyqFm84ONR0GYMGBBKCi/7nK0yJ6S+iUlr7SE3j9396s0BOSwyYTb+weaZEg5ouEgTpHzEPLPwcYvlGAEA+wOeyNVNCSiqZWmVw6FWfKDu9/3v+9yAGD4CSRBF7eC+z1fF9QfHxDAUQ45dsoRbDFjtyeJiSDoqFU55joJhvM80km9boLhQJIlEwUfjDyfXrjgsSfcujJVCl5gbubSpTyBrP93YjD4H52qoB2uNFFaAAAAAElFTkSuQmCC'),
-
-                        //   ),
-                      ),
-                      Text(
-                        widget.user!.email,
-                        //    _userData!['email'],
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                      // Text(_userData!['name'],
-                      //     style: const TextStyle(
-                      //         fontWeight: FontWeight.bold,
-                      //         fontSize: 15,
-                      //         color: Colors.white))
-                    ],
-                  ),
-                ),
-              ),
-              // Text("sample"),
-              const ListTile(
-                leading: Icon(
-                  Icons.account_circle_outlined,
-                  color: Colors.black,
-                ),
-                title: Text(
-                  "Profile ",
-                  style: TextStyle(
-                    fontSize: 15,
-                  ),
-                ),
-              ),
-              const ListTile(
-                leading: Icon(
-                  Icons.settings_accessibility_outlined,
-                  color: Colors.black,
-                ),
-                title: Text(
-                  "Settings ",
-                  style: TextStyle(
-                    fontSize: 15,
-                  ),
-                ),
-                onTap: null,
-                focusColor: Colors.redAccent,
-                selectedTileColor: Colors.redAccent,
-              ),
-              const SizedBox(
-                height: 280,
-              ),
-
-              ElevatedButton.icon(
-                  style: ButtonStyle(
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18.0),
-                              side: const BorderSide(color: Colors.white)))),
-                  onPressed: () {
-                    _handleSignOut(context);
-                  },
-                  icon: const Icon(Icons.logout_rounded),
-                  label: const Text("LogOut")),
-            ],
-          ),
-        ),
         body: SingleChildScrollView(
           child: Column(
             children: [
               Container(
                 width: MediaQuery.of(context).size.width,
-                //  width: 500,
-                // height: 250,
-                // color:Colors.blue,
-                decoration: BoxDecoration(
-                  borderRadius:
-                      BorderRadius.only(bottomRight: Radius.circular(60)),
-                  color: color.myColorS,
+                decoration: const BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                      bottomRight: Radius.elliptical(30, 35),
+                      bottomLeft: Radius.elliptical(30, 35)),
+                  color: Colors.white,
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.only(bottom: 10), //lfirst container
                   child: Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 220, top: 15),
-                        // child: Container(
-                        //   //  padding: EdgeInsets.all(30),
-                        //   width: 70,
-                        //   height: 70,
-                        //   // margin: const EdgeInsets.only(top: 30, bottom: 27),
-                        //   decoration: BoxDecoration(
-                        //     shape: BoxShape.circle,
-                        //     image: DecorationImage(
-                        //       image: NetworkImage(
-                        //           _userData?['picture']['data']['url']),
-                        //       fit: BoxFit.fill,
-                        //     ),
-                        //   ),
-                        // ),
+                      Image.asset(
+                        "images/Dementia-1-removebg-preview.jpg",
+                        height: 160,
                       ),
-                      SizedBox(height: 10),
-                      Row(
-                        // crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            "Hello ' ",
-                            style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                fontStyle: FontStyle.italic,
-                                color: Colors.black),
-                          ),
-                          //   accessToken != null
-                          //  user!= null ?
-                          Text(
-                            "msp palakkal",
-                            // user!.email,
-                            style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white),
-                          )
-                          //   Text("NO AccessToken Found!"),
-                          //  accessToken != null
-                          //   ? Text(_userData!['email'] ,style: TextStyle(fontSize: 12,fontWeight: FontWeight.bold,color: Colors.white),)
-                          //   : Text("NO AccessToken Found!"),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 30),
-                        child: Column(
-                          // mainAxisAlignment: MainAxisAlignment.start,
-                          //  crossAxisAlignment: CrossAxisAlignment.start,
-
-                          children: [
-                            widget.user != null
-                                ? Text(
-                                    widget.user!.email,
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white),
-                                  )
-                                : Text("NO AccessToken Found!"),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            const Text(
-                              "“The cheerful mind perseveres, and the strong mind hews its way through a thousand difficulties.” ",
-                              style: TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                  fontWeight: FontWeight.w300,
-                                  color: Colors.black),
-                            )
-                          ],
-                        ),
-                      ),
-                      // Container(
-                      //   color: Colors.amberAccent,
-                      //   width: 200,
-                      //   height: 200
-
-                      //   ,
-                      // )
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  // height: 100,
-                  // color: Colors.cyan,
-                  decoration: const BoxDecoration(
-                      borderRadius: BorderRadiusDirectional.only(
-                          topStart: Radius.circular(30),
-                          bottomEnd: Radius.circular(30)),
-                      color: Colors.blueGrey),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        Text("About'"),
-                        Text(
-                          "This patient also had an additional risk factor for AD, being a heterozygote for the apoЄ4 allele. Among other mechanisms, its presence reduces clearance of Aβ42 from the brain and increases glial activation",
-                          style: TextStyle(
-                              fontStyle: FontStyle.italic, color: Colors.white),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                    padding: EdgeInsets.all(10),
-                    width: MediaQuery.of(context).size.width,
-                    //  color: Colors.lightBlue,
-                    // height: 150,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                      color: color.myColorS,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 5),
-                      child: Column(
+                      const SizedBox(height: 10),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            "Hi..How Do you feel Today",
+                            "Welcome ",
                             style: TextStyle(
-                                fontSize: 15,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
                                 fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.w300,
-                                color: Colors.white),
+                                color: Colors.black),
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              IconButton(
-                                  iconSize: 41,
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            scrollable: true,
-                                            title: Text('Feeling veryGood!'),
-                                            content: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Column(
-                                                children: <Widget>[
-                                                  Icon(
-                                                      Icons
-                                                          .sentiment_very_satisfied_outlined,
-                                                      size: 33),
-                                                  Container(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                            .size
-                                                            .width,
-                                                    //  height: 20,
-                                                    //  color: color.myColor,
-                                                    child:
-                                                        const SingleChildScrollView(
-                                                      child: Text(
-                                                          "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            actions: [
-                                              ElevatedButton(
-                                                  child: Text("Cancel"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                              //if user click done ,,then -disable button until a const time!
-                                              ElevatedButton(
-                                                  child: Text("Done"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                            ],
-                                          );
-                                        });
-                                  },
-                                  icon: Icon(
-                                      Icons.sentiment_very_satisfied_outlined)),
-                              IconButton(
-                                  iconSize: 41,
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            scrollable: true,
-                                            title: const Text('Feeling Good!'),
-                                            content: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Column(
-                                                children: <Widget>[
-                                                  const Icon(
-                                                      Icons
-                                                          .sentiment_satisfied_outlined,
-                                                      size: 33),
-                                                  Container(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                            .size
-                                                            .width,
-                                                    //  height: 20,
-                                                    //  color: color.myColor,
-                                                    child:
-                                                        const SingleChildScrollView(
-                                                      child: Text(
-                                                          "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            actions: [
-                                              ElevatedButton(
-                                                  child: Text("Cancel"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                              ElevatedButton(
-                                                  child: Text("Done"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                            ],
-                                          );
-                                        });
-                                  },
-                                  icon:
-                                      Icon(Icons.sentiment_satisfied_outlined)),
-                              IconButton(
-                                  iconSize: 41,
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            scrollable: true,
-                                            title: Text('Feeling Nothing!'),
-                                            content: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Column(
-                                                children: <Widget>[
-                                                  Icon(
-                                                      Icons
-                                                          .sentiment_neutral_outlined,
-                                                      size: 33),
-                                                  Container(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                            .size
-                                                            .width,
-                                                    //  height: 20,
-                                                    //  color: color.myColor,
-                                                    child:
-                                                        const SingleChildScrollView(
-                                                      child: Text(
-                                                          "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            actions: [
-                                              ElevatedButton(
-                                                  child: Text("Cancel"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                              ElevatedButton(
-                                                  child: Text("Done"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                            ],
-                                          );
-                                        });
-                                  },
-                                  icon: const Icon(
-                                      Icons.sentiment_neutral_outlined)),
-                              IconButton(
-                                  iconSize: 41,
-                                  onPressed: () {
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            scrollable: true,
-                                            title: const Text('Feeling bad!'),
-                                            content: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Column(
-                                                children: <Widget>[
-                                                  const Icon(
-                                                      Icons
-                                                          .sentiment_dissatisfied_outlined,
-                                                      size: 33),
-                                                  Container(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                            .size
-                                                            .width,
-                                                    //  height: 20,
-                                                    //  color: color.myColor,
-                                                    child:
-                                                        const SingleChildScrollView(
-                                                      child: Text(
-                                                          "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            actions: [
-                                              ElevatedButton(
-                                                  child: Text("Cancel"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                              ElevatedButton(
-                                                  child: Text("Done"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                            ],
-                                          );
-                                        });
-                                  },
-                                  icon: Icon(
-                                      Icons.sentiment_dissatisfied_rounded)),
-                              IconButton(
-                                  iconSize: 41,
-                                  highlightColor: Colors.yellowAccent,
-                                  onPressed: () {
-                                    print("button cliked!");
-                                    showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            scrollable: true,
-                                            title:
-                                                const Text('Feeling veryBad!'),
-                                            content: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(8.0),
-                                              child: Column(
-                                                children: <Widget>[
-                                                  const Icon(
-                                                      Icons
-                                                          .sentiment_very_dissatisfied_outlined,
-                                                      size: 33),
-                                                  Container(
-                                                    width:
-                                                        MediaQuery.of(context)
-                                                            .size
-                                                            .width,
-                                                    //  height: 20,
-                                                    //  color: color.myColor,
-                                                    child:
-                                                        const SingleChildScrollView(
-                                                      child: Text(
-                                                          "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            actions: [
-                                              ElevatedButton(
-                                                  child: Text("Cancel"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                              ElevatedButton(
-                                                  child: Text("Done"),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                            ],
-                                          );
-                                        });
-                                  },
-                                  icon: Icon(Icons
-                                      .sentiment_very_dissatisfied_outlined)),
-                            ],
-                          ),
+                          // widget.accessToken != null
+                          //     ? Text(
+                          //         widget.userData!['name'],
+                          //         style: TextStyle(
+                          //             fontSize: 20,
+                          //             fontWeight: FontWeight.bold,
+                          //             color: Colors.pink.shade700),
+                          //       )
+                          //     : const Text("NO AccessToken Found!"),
                         ],
                       ),
-                    )),
+                    ],
+                  ),
+                ),
               ),
+              //  SizedBox(height: 2),
               Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.only(left: 8, right: 8),
                 child: Container(
                   width: MediaQuery.of(context).size.width,
-                  //  height: 200,
+                  // height: 100,
+                  // color: Colors.cyan,
                   decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                    color: color.myColorS,
-                  ),
+                      borderRadius: BorderRadiusDirectional.only(
+                          topStart: Radius.circular(12),
+                          topEnd: Radius.circular(12),
+                          bottomEnd: Radius.circular(30),
+                          bottomStart: Radius.circular(30)),
+                      color: Colors.grey),
                   child: Padding(
-                    padding: const EdgeInsets.all(13),
+                    padding: const EdgeInsets.all(8.0),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        ElevatedButton(
-                            child: const Text(
-                              'Access My Symptoms',
-                              style: TextStyle(color: Colors.black),
+                        const Text(
+                          "About'",
+                          style: TextStyle(
+                              fontSize: 17, fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          "Patient Name : --\n"
+                          "Contact Info : --\n"
+                          "Health Status: --\n"
+                          "Health Records: --\n"
+                          "This patient also had an additional risk factor for AD, Among other mechanisms, its presence reduces the health power!",
+                          style: TextStyle(
+                              fontStyle: FontStyle.italic,
+                              color: Colors.pink.shade700),
+                        ),
+                        //emoji capture--daily route
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                              padding: const EdgeInsets.all(10),
+                              width: MediaQuery.of(context).size.width,
+                              //  color: Colors.lightBlue,
+                              // height: 150,
+                              decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20)),
+                                color: myColor,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 5),
+                                child: Column(
+                                  children: [
+                                    //  Text(
+                                    //   "Hi..How Do you feel Today",
+                                    //   style: TextStyle(
+                                    //       fontSize: 15,
+                                    //       fontStyle: FontStyle.italic,
+                                    //       fontWeight: FontWeight.w300,
+                                    //       color: Colors.white),
+                                    // ),
+                                    isClicked
+                                        ? const Text(
+                                            'Hy..How do you feel Today? Click one',
+                                            style: const TextStyle(
+                                                fontSize: 13,
+                                                fontStyle: FontStyle.italic,
+                                                fontWeight: FontWeight.w400,
+                                                color: Colors.white),
+                                          )
+                                        : const Text(
+                                            'Thanks!..Successfully updated.',
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                fontStyle: FontStyle.italic,
+                                                fontWeight: FontWeight.w400,
+                                                color: Colors.white),
+                                          ),
+
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        IconButton(
+                                            iconSize: 41,
+                                            onPressed: () {
+                                              showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                      scrollable: true,
+                                                      title: const Text(
+                                                        'Feeling veryGood!',
+                                                        style: TextStyle(
+                                                            color: Colors.pink),
+                                                      ),
+                                                      content: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            const Icon(
+                                                                Icons
+                                                                    .sentiment_very_satisfied_outlined,
+                                                                size: 33),
+                                                            Container(
+                                                              width:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
+                                                              //  height: 20,
+                                                              //  color: color.myColor,
+                                                              child:
+                                                                  const SingleChildScrollView(
+                                                                child: Text(
+                                                                    "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      actions: [
+                                                        ElevatedButton(
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              primary: Colors
+                                                                  .pink
+                                                                  .shade700,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            50),
+                                                                //border radius equal to or more than 50% of width
+                                                              ),
+                                                            ),
+                                                            child: const Text(
+                                                                "Cancel"),
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context);
+                                                            }),
+                                                        //if user clicked ones--disble the btn.and also pass the value to local_db
+                                                        ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            primary: Colors
+                                                                .pink.shade700,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          50),
+                                                              //border radius equal to or more than 50% of width
+                                                            ),
+                                                          ),
+                                                          onPressed: isClicked
+                                                              ? () {
+                                                                  {
+                                                                    setState(
+                                                                        () {
+                                                                      var dt =
+                                                                          DateTime
+                                                                              .now();
+                                                                      insertData(
+                                                                          'Very_Good',
+                                                                          dt.day); //also we have to pass current date.
+                                                                      isClicked =
+                                                                          false;
+                                                                    });
+                                                                  }
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                }
+                                                              : null,
+                                                          child: const Text(
+                                                              "Done"),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  });
+                                            },
+                                            icon: const Icon(Icons
+                                                .sentiment_very_satisfied_outlined)),
+                                        IconButton(
+                                            iconSize: 41,
+                                            onPressed: () {
+                                              showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                      scrollable: true,
+                                                      title: const Text(
+                                                        'Feeling Good!',
+                                                        style: TextStyle(
+                                                            color: Colors.pink),
+                                                      ),
+                                                      content: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            const Icon(
+                                                                Icons
+                                                                    .sentiment_satisfied_outlined,
+                                                                size: 33),
+                                                            Container(
+                                                              width:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
+                                                              //  height: 20,
+                                                              //  color: color.myColor,
+                                                              child:
+                                                                  const SingleChildScrollView(
+                                                                child: Text(
+                                                                    "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      actions: [
+                                                        ElevatedButton(
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              primary: Colors
+                                                                  .pink
+                                                                  .shade700,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            50),
+                                                                //border radius equal to or more than 50% of width
+                                                              ),
+                                                            ),
+                                                            child: const Text(
+                                                                "Cancel"),
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context);
+                                                            }),
+                                                        ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            primary: Colors
+                                                                .pink.shade700,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          50),
+                                                              //border radius equal to or more than 50% of width
+                                                            ),
+                                                          ),
+                                                          onPressed: isClicked
+                                                              ? () {
+                                                                  {
+                                                                    setState(
+                                                                        () {
+                                                                      var dt =
+                                                                          DateTime
+                                                                              .now();
+                                                                      insertData(
+                                                                          'Good',
+                                                                          dt.day);
+                                                                      isClicked =
+                                                                          false;
+                                                                    });
+                                                                  }
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                }
+                                                              : null,
+                                                          child: const Text(
+                                                              "Done"),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  });
+                                            },
+                                            icon: const Icon(Icons
+                                                .sentiment_satisfied_outlined)),
+                                        IconButton(
+                                            iconSize: 41,
+                                            onPressed: () {
+                                              showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                      scrollable: true,
+                                                      title: Text(
+                                                        'Feeling Nothing!',
+                                                        style: TextStyle(
+                                                            color: Colors
+                                                                .pink.shade700),
+                                                      ),
+                                                      content: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            const Icon(
+                                                                Icons
+                                                                    .sentiment_neutral_outlined,
+                                                                size: 33),
+                                                            Container(
+                                                              width:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
+                                                              //  height: 20,
+                                                              //  color: color.myColor,
+                                                              child:
+                                                                  const SingleChildScrollView(
+                                                                child: Text(
+                                                                    "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      actions: [
+                                                        ElevatedButton(
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              primary: Colors
+                                                                  .pink
+                                                                  .shade700,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            50),
+                                                                //border radius equal to or more than 50% of width
+                                                              ),
+                                                            ),
+                                                            child: const Text(
+                                                                "Cancel"),
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context);
+                                                            }),
+                                                        ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            primary: Colors
+                                                                .pink.shade700,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          50),
+                                                              //border radius equal to or more than 50% of width
+                                                            ),
+                                                          ),
+                                                          onPressed: isClicked
+                                                              ? () {
+                                                                  {
+                                                                    setState(
+                                                                        () {
+                                                                      var dt =
+                                                                          DateTime
+                                                                              .now();
+                                                                      insertData(
+                                                                          'Nothing',
+                                                                          dt.day);
+                                                                      isClicked =
+                                                                          false;
+                                                                    });
+                                                                  }
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                }
+                                                              : null,
+                                                          child: const Text(
+                                                              "Done"),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  });
+                                            },
+                                            icon: const Icon(Icons
+                                                .sentiment_neutral_outlined)),
+                                        IconButton(
+                                            iconSize: 41,
+                                            onPressed: () {
+                                              showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                      scrollable: true,
+                                                      title: const Text(
+                                                        'Feeling bad!',
+                                                        style: TextStyle(
+                                                            color: Colors.pink),
+                                                      ),
+                                                      content: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            const Icon(
+                                                                Icons
+                                                                    .sentiment_dissatisfied_outlined,
+                                                                size: 33),
+                                                            Container(
+                                                              width:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
+                                                              //  height: 20,
+                                                              //  color: color.myColor,
+                                                              child:
+                                                                  const SingleChildScrollView(
+                                                                child: Text(
+                                                                    "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      actions: [
+                                                        ElevatedButton(
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              primary: Colors
+                                                                  .pink
+                                                                  .shade700,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            50),
+                                                                //border radius equal to or more than 50% of width
+                                                              ),
+                                                            ),
+                                                            child: const Text(
+                                                                "Cancel"),
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context);
+                                                            }),
+                                                        ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            primary: Colors
+                                                                .pink.shade700,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          50),
+                                                              //border radius equal to or more than 50% of width
+                                                            ),
+                                                          ),
+                                                          onPressed: isClicked
+                                                              ? () {
+                                                                  {
+                                                                    setState(
+                                                                        () {
+                                                                      var dt =
+                                                                          DateTime
+                                                                              .now();
+                                                                      //print(dt.year);
+                                                                      insertData(
+                                                                          'Bad',
+                                                                          dt.day);
+                                                                      isClicked =
+                                                                          false;
+                                                                    });
+                                                                  }
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                }
+                                                              : null,
+                                                          child: const Text(
+                                                              "Done"),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  });
+                                            },
+                                            icon: const Icon(Icons
+                                                .sentiment_dissatisfied_rounded)),
+                                        IconButton(
+                                            iconSize: 41,
+                                            highlightColor: Colors.yellowAccent,
+                                            onPressed: () {
+                                              print("button cliked!");
+                                              showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) {
+                                                    return AlertDialog(
+                                                      scrollable: true,
+                                                      title: const Text(
+                                                        'Feeling veryBad!',
+                                                        style: TextStyle(
+                                                            color: Colors.pink),
+                                                      ),
+                                                      content: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            const Icon(
+                                                                Icons
+                                                                    .sentiment_very_dissatisfied_outlined,
+                                                                size: 33),
+                                                            Container(
+                                                              width:
+                                                                  MediaQuery.of(
+                                                                          context)
+                                                                      .size
+                                                                      .width,
+                                                              //  height: 20,
+                                                              //  color: color.myColor,
+                                                              child:
+                                                                  const SingleChildScrollView(
+                                                                child: Text(
+                                                                    "Well, relax, because there are plenty of warm, hopeful, encouraging and"),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      actions: [
+                                                        ElevatedButton(
+                                                            style:
+                                                                ElevatedButton
+                                                                    .styleFrom(
+                                                              primary: Colors
+                                                                  .pink
+                                                                  .shade700,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            50),
+                                                                //border radius equal to or more than 50% of width
+                                                              ),
+                                                            ),
+                                                            child: const Text(
+                                                                "Cancel"),
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context);
+                                                            }),
+                                                        ElevatedButton(
+                                                          style: ElevatedButton
+                                                              .styleFrom(
+                                                            primary: Colors
+                                                                .pink.shade700,
+                                                            shape:
+                                                                RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          50),
+                                                              //border radius equal to or more than 50% of width
+                                                            ),
+                                                          ),
+                                                          onPressed: isClicked
+                                                              ? () {
+                                                                  {
+                                                                    setState(
+                                                                        () {
+                                                                      //  var dt = DateTime.now();
+                                                                      insertData(
+                                                                          'very_Bad',
+                                                                          dt.day);
+                                                                      isClicked =
+                                                                          false;
+                                                                    });
+                                                                  }
+                                                                  Navigator.pop(
+                                                                      context);
+                                                                }
+                                                              : null,
+                                                          child: const Text(
+                                                              "Done"),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  });
+                                            },
+                                            icon: const Icon(Icons
+                                                .sentiment_very_dissatisfied_outlined)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              )),
+                        ),
+                        //options panel-->btn for asscess symptoms,posthealt related issues,
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width,
+                            //  height: 200,
+                            decoration: const BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                color: Colors.white),
+                            child: Padding(
+                              padding: const EdgeInsets.all(13),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  ElevatedButton(
+                                      child: const Text(
+                                        'Dementia Related Question',
+                                        style: TextStyle(color: Colors.white60),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const screen_symptoms()));
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        primary: myColor,
+                                        // Background color
+                                        shadowColor: Colors.black,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                      )),
+                                  ElevatedButton(
+                                      child: const Text('Access My Symptoms',
+                                          style:
+                                              TextStyle(color: Colors.white60)),
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  screen_qus(),
+                                            ));
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        primary: myColor, // Background color
+                                        shadowColor: Colors.black,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                      )),
+                                  ElevatedButton(
+                                      child: const Text(
+                                          'Entroll in a Care guide',
+                                          style:
+                                              TextStyle(color: Colors.white60)),
+                                      onPressed: () {
+                                        _launchURL();
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        primary: myColor, // Background color
+                                        shadowColor: Colors.black,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10)),
+                                      )),
+                                ],
+                              ),
                             ),
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const screen_symptoms()));
-                            },
-                            style: ElevatedButton.styleFrom(
-                              primary: color.myColor, // Background color
-                            )),
-                        ElevatedButton(
-                            child: const Text('Post a health Qustion',
-                                style: TextStyle(color: Colors.black)),
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              primary: color.myColor, // Background color
-                            )),
-                        ElevatedButton(
-                            child: const Text('Entroll in a Care guide',
-                                style: TextStyle(color: Colors.black)),
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              primary: color.myColor, // Background color
-                            )),
+                          ),
+                        )
                       ],
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -1287,12 +2179,12 @@ class _screen_homeState extends State<screen_home> {
     }
   }
 
+  //-->facebook logout & return back to first screen!
+
   Future<void> _logOut(ctx) async {
     await FacebookAuth.instance.logOut();
-    // accessToken = null;
-    // _userData = null;
-    // setState(() {});
-    //  Navigator.pop(ctx);
+    widget.accessToken = null;
+    widget.userData = null;
     Navigator.of(ctx).popUntil((route) => route.isFirst);
   }
 
@@ -1300,5 +2192,120 @@ class _screen_homeState extends State<screen_home> {
     _googleSignIn.disconnect();
     // Navigator.pop(contex);
     Navigator.of(contex).popUntil((route) => route.isFirst);
+  }
+
+  //-->bottom sheet for accessing users feeling & emojis,
+  void bottomSheet(BuildContext ctx) async {
+    showModalBottomSheet(
+        backgroundColor: Colors.white,
+        barrierColor: Colors.transparent,
+        context: ctx,
+        builder: (_) {
+          return Container(
+            height: 400,
+            decoration: BoxDecoration(
+                color: Color.fromARGB(255, 91, 96, 148).withOpacity(0.4),
+                borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(20),
+                    topLeft: Radius.circular(20))),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                // mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Hello..How do you feel today!..\nCan you give a Smile!',
+                    style: TextStyle(color: Colors.pink),
+                  ),
+                  verticalspace(25),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      textforemoji("I'm happy-go-lucky"),
+                      IconButton(
+                        onPressed: isClicked
+                            ? () {
+                                {
+                                  setState(() {
+                                    var dt = DateTime.now();
+                                    insertData('Very_Good',
+                                        dt.day); //also we have to pass current date.
+                                    isClicked = false;
+                                  });
+                                }
+                                Navigator.pop(context);
+                              }
+                            : null,
+                        icon:
+                            const Icon(Icons.sentiment_very_satisfied_outlined),
+                        iconSize: 42,
+                        color: Colors.pink,
+                      ),
+                    ],
+                  ),
+                  textforemojiDetails(
+                      "i'm feeling good!,it was an amazing day,thanks for the beatiful moments!"),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      textforemoji("I'm apathetic"),
+                      IconButton(
+                        onPressed: isClicked
+                            ? () {
+                                {
+                                  setState(() {
+                                    var dt = DateTime.now();
+                                    insertData('Nothing',
+                                        dt.day); //also we have to pass current date.
+                                    isClicked = false;
+                                  });
+                                }
+                                Navigator.pop(context);
+                              }
+                            : null,
+                        icon: const Icon(Icons.sentiment_neutral_outlined),
+                        iconSize: 42,
+                        color: Colors.pink,
+                      ),
+                    ],
+                  ),
+                  textforemojiDetails(
+                      "i'm feeling Nothing!,it was an sudden for me, thanks for the beatiful moments!"),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      textforemoji("I'm Despondent!"),
+                      IconButton(
+                        onPressed: isClicked
+                            ? () {
+                                {
+                                  setState(() {
+                                    var dt = DateTime.now();
+                                    insertData('Bad',
+                                        dt.day); //also we have to pass current date.
+                                    isClicked = false;
+                                  });
+                                }
+                                Navigator.pop(context);
+                              }
+                            : null,
+                        icon: const Icon(Icons.sentiment_dissatisfied_outlined),
+                        iconSize: 42,
+                        color: Colors.pink,
+                      ),
+                    ],
+                  ),
+                  textforemojiDetails(
+                      "i'm feeling Bod!,it was an sudden for me, i like to improve the sudden things!"),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                      },
+                      child: const Text("Cancel")),
+                ],
+              ),
+            ),
+          );
+        });
   }
 }

@@ -45,6 +45,9 @@ dependencies:
   
   
   
+  
+  
+  
 
 dev_dependencies:
   flutter_test:
@@ -72,13 +75,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-   - images/dementia_login_whi.png
-   - images/login.jpg
-   - images/wecome.jpg
-   - images/emoji_cool.jpg
-   - images/emoji_bad.jpg
-   - images/emoji_normal.jpg
-   - images/emoji_smileGood.jpg
+   - images/Dementia-1-removebg-preview.jpg
+   - images/fb.png
+   - images/google-plus.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
