@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_4/pages/screen_login.dart';
 import 'package:flutter_application_4/screen_home.dart';
@@ -8,16 +10,26 @@ class screen_signup extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController();
   TextEditingController passController = TextEditingController();
+  TextEditingController usernameController = TextEditingController();
 
-  Future<void> login(String email, pass, BuildContext ctx) async {
+  Future<void> login(
+      String email, String pass, String username, BuildContext ctx) async {
     try {
-      Response response =
-          await post(Uri.parse('https://reqres.in/api/register'), body: {
-        'email': email,
-        'password': pass,
-      });
+      Response response = await post(
+          Uri.parse('https://dementia.cianlogic.com/accounts/register/'),
+          body: {
+            'username': username,
+            'email': email,
+            'password': pass,
+            'password2': pass,
+          });
+      // print(email);
+      // print(pass);
       if (response.statusCode == 200) {
         print("account created succssefull");
+        final data = jsonDecode(response.body);
+        final token = data['token'];
+        print(token);
 
         Navigator.push(
             ctx,
@@ -26,7 +38,7 @@ class screen_signup extends StatelessWidget {
                       null,
                       null,
                       null,
-                      email,
+                      username,
                     )));
       } else {
         print("faild to creating account");
@@ -81,6 +93,29 @@ class screen_signup extends StatelessWidget {
                         border: OutlineInputBorder(),
                         hintText: 'eg: octavia123@gmail.com',
                         labelText: 'user email',
+                        fillColor: Colors.grey,
+                        prefixIcon: Icon(Icons.email_outlined),
+                        suffixIconColor: Colors.blue,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment.center,
+                    padding:
+                        const EdgeInsets.only(left: 28, right: 28, bottom: 10),
+                    child: TextFormField(
+                      controller: usernameController,
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'pls enter some data';
+                        }
+                        return null;
+                      },
+                      decoration: const InputDecoration(
+                        // errorBorder:
+                        border: OutlineInputBorder(),
+                        hintText: 'octavia_s',
+                        labelText: 'user name',
                         fillColor: Colors.grey,
                         prefixIcon: Icon(Icons.email_outlined),
                         suffixIconColor: Colors.blue,
@@ -168,8 +203,11 @@ class screen_signup extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Processing Data')),
                           );
-                          login(emailController.text.toString(),
-                              passController.text.toString(), context);
+                          login(
+                              emailController.text.toString(),
+                              passController.text.toString(),
+                              usernameController.text.toString(),
+                              context);
                         }
                         // if(status)
                         // {

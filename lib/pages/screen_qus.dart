@@ -2,14 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_application_4/API/HTTPhelper.dart';
+import 'package:flutter_application_4/API/youtube.dart';
+import 'package:flutter_application_4/consts/constands.dart';
 import 'package:flutter_application_4/pages/screen_AddPost.dart';
+import 'package:flutter_application_4/pages/screen_splash.dart';
 import 'package:flutter_application_4/pages/screen_sympMain.dart';
 import 'package:http/http.dart';
 
-class screen_qus extends StatelessWidget {
+class screen_qus extends StatefulWidget {
   screen_qus({Key? key}) : super(key: key);
+  //final url;
+  @override
+  State<screen_qus> createState() => _screen_qusState();
+}
 
-  Future<List<Map>> _futurepost = HTTPhelper().fetchItems();
+class _screen_qusState extends State<screen_qus> {
+  // YoutubePlayerController? _controller;
+
+  // late VideoPlayerController _controller;
+  // late Future<void> _initializeVideoPlayerFuture;
+  Future<List<Map>> _futurepost = HTTPhelper().fetchItems(SAVE_KEY_NAME);
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    // _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +43,9 @@ class screen_qus extends StatelessWidget {
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => screen_AddPost()));
+                MaterialPageRoute(builder: (context) => screen_sympMain(null)));
           },
-          child: const Icon(Icons.add_chart),
+          child: Icon(Icons.next_plan),
         ),
         body: FutureBuilder<List<Map>>(
           future: _futurepost,
@@ -40,13 +62,29 @@ class screen_qus extends StatelessWidget {
                     return GestureDetector(
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) =>
-                                screen_sympMain(thisItem['id'].toString())));
+                            builder: (context) => youtubeVideo()));
                       },
                       child: Card(
-                        child: ListTile(
-                          title: Text('${thisItem['title']}'),
-                          subtitle: Text('${thisItem['body']}'),
+                        child: Column(
+                          children: [
+                            Text("Dementia Care"),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ListTile(
+                                title: Center(
+                                  child: Text(
+                                    '${thisItem['title']}',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                subtitle: Text(
+                                    '${thisItem['description']}A person with dementia might become agitated when once-simple tasks become difficult. To limit challenges and ease frustration'),
+                              ),
+                            ),
+                            verticalspace(15),
+                            Text('for more,Click -->video lectures'),
+                          ],
                         ),
                       ),
                     );

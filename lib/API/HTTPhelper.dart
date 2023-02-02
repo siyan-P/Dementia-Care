@@ -4,13 +4,17 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class HTTPhelper {
-  //-->fetch all dates from api
-  Future<List<Map>> fetchItems() async {
+  // -->fetch all data from api
+  Future<List<Map>> fetchItems(String token) async {
     List<Map> items = [];
     //get datas from api _creating connection
-    http.Response response =
-        await http.get(Uri.parse('https://jsonplaceholder.typicode.com/posts'));
-
+    http.Response response = await http.get(
+        Uri.parse('https://dementia.cianlogic.com/symptom/list'),
+        headers: {
+          'Authorization': token,
+          //'Content-Type': 'application/json'
+        });
+    log(token);
     if (response.statusCode == 200) {
       log("API connection succssfull-->for listing all data");
       //get the data from responce
@@ -18,24 +22,33 @@ class HTTPhelper {
       //convert to List<Map>
       List data = jsonDecode(jsonString);
       items = data.cast<Map>();
+      log(jsonString);
+    } else {
+      log("API connection faild-->for listing all data");
     }
+
     return items;
   }
 
-  //-->fetch details of one date using cards id
-  Future<Map> getItem(itemid) async {
-    Map item = {};
-    //get the item from api
-    http.Response response = await http
-        .get(Uri.parse('https://jsonplaceholder.typicode.com/posts/$itemid'));
-    if (response.statusCode == 200) {
-      //get the data from responce body
-      String jsonString = response.body;
-      //convert to List<Map>
-      item = jsonDecode(jsonString);
-    }
-    return item;
-  }
+  //-->fetch details of one data using cards id
+  // Future<Map> getItem(String token) async {
+  //   log(id);
+  //   Map item = {};
+  //   //get the item from api
+  //   http.Response response =
+  //       await http.get(Uri.parse('https://dementia.cianlogic.com/symptom/$id'),
+  //       headers: {
+  //         'Authorization': token,
+  //         //'Content-Type': 'application/json'
+  //       });
+  //   if (response.statusCode == 200) {
+  //     //get the data from responce body
+  //     String jsonString = response.body;
+  //     //convert to List<Map>
+  //     item = jsonDecode(jsonString);
+  //   }
+  //   return item;
+  // }
 
   //-->delete an item
   Future<bool> deleteItem(String itemid) async {

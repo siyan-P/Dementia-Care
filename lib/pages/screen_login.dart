@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_4/local_db/data_model.dart';
+import 'package:flutter_application_4/main.dart';
 import 'package:flutter_application_4/pages/googledemo.dart';
 import 'package:flutter_application_4/pages/screen_registration.dart';
+import 'package:flutter_application_4/pages/screen_splash.dart';
 import 'package:flutter_application_4/sample.dart';
 import 'package:flutter_application_4/screen_home.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -10,6 +12,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:http/retry.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 String prettyPrint(Map json) {
   JsonEncoder encoder = const JsonEncoder.withIndent('  ');
@@ -123,6 +126,7 @@ class _screen_loginState extends State<screen_login> {
                               null,
                               null,
                               _currentUser,
+                              null,
                             )))
                 : null
           });
@@ -151,6 +155,7 @@ class _screen_loginState extends State<screen_login> {
                       null,
                       null,
                       _currentUser,
+                      null,
                     )))
         : null;
   }
@@ -217,7 +222,8 @@ class _screen_loginState extends State<screen_login> {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => screen_home(userData, accessToken, null)));
+              builder: (context) =>
+                  screen_home(userData, accessToken, null, null)));
     } else {
       print(result.status);
       print(result.message);
@@ -229,15 +235,28 @@ class _screen_loginState extends State<screen_login> {
   }
 
 //-->login with username and password
-  Future<void> login(String email, pass, BuildContext ctx) async {
+  Future<void> login(String user, String pass, BuildContext ctx) async {
     try {
-      Response response =
-          await post(Uri.parse('https://reqres.in/api/login'), body: {
-        'email': email,
-        'password': pass,
-      });
+      Response response = await post(
+          Uri.parse('https://dementia.cianlogic.com/accounts/login/'),
+          body: {
+            'username': user,
+            'password': pass,
+          });
       if (response.statusCode == 200) {
-        print("account created succssefully");
+        print("login  succssefully");
+        final data = jsonDecode(response.body);
+        String token = data['token'];
+        print(token);
+        //sharedPreferences storing token ID,
+        final _sharedPref = await SharedPreferences.getInstance();
+        _sharedPref.setString('SAVE_KEY_NAME', token);
+        print(SAVE_KEY_NAME);
+        //sharedPreferences Stroring user Details,
+        _sharedPref.setString('SAVE_USER_NAME', user);
+        print(SAVE_USER_NAME);
+        //String? value = _sharedPref.getString('SAVE_KEY_VALUE');
+        // print("token value is$value");
         //navigate to home page
         Navigator.push(
             ctx,
@@ -246,7 +265,7 @@ class _screen_loginState extends State<screen_login> {
                       null,
                       null,
                       null,
-                      email,
+                      user,
                     )));
       } else {
         print("faild to creating account");
@@ -297,7 +316,7 @@ class _screen_loginState extends State<screen_login> {
                                 // errorBorder:
                                 border: OutlineInputBorder(),
                                 hintText: 'eg: octavia@123',
-                                labelText: 'user email',
+                                labelText: 'user name',
                                 fillColor: Colors.pinkAccent,
                                 prefixIcon:
                                     Icon(Icons.person_pin_circle_outlined),

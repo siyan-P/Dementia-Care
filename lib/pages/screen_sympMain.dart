@@ -1,15 +1,19 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_4/API/HTTPhelper.dart';
+import 'package:flutter_application_4/pages/screen_splash.dart';
 import 'package:http/src/response.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class screen_sympMain extends StatefulWidget {
-  screen_sympMain(this.itemId, {Key? key}) : super(key: key) {
-    _futurePost = HTTPhelper().getItem(itemId);
-  }
-  String itemId;
-  late Future<Map> _futurePost;
+  screen_sympMain(dynamic string, {this.guidlinevideo});
+  // _futurePost = HTTPhelper().getItem(itemId, SAVE_KEY_NAME);
+
+  final guidlinevideo;
+
+  //late Future<Map> _futurePost;
 
   @override
   State<screen_sympMain> createState() => _screen_sympMainState();
@@ -20,7 +24,8 @@ class _screen_sympMainState extends State<screen_sympMain> {
   TextEditingController _controllerBody = TextEditingController();
   late Map post;
 
-  intiState() {
+  @override
+  void intiState() {
     super.initState();
     _controllerTitle.text = post['title'];
     _controllerBody.text = post['body'];
@@ -96,64 +101,70 @@ class _screen_sympMainState extends State<screen_sympMain> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Details'),
-          centerTitle: true,
-          actions: [
-            IconButton(
-                onPressed: () async {
-                  //deleting the listed item,
-                  bool deleted = await HTTPhelper().deleteItem(widget.itemId);
-                  if (deleted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Post deleted')));
-                    Navigator.pop(context);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('faild to delete ${widget.itemId}')));
-                  }
-                },
-                icon: const Icon(Icons.delete_forever))
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            //update the current data
-            BottomSheet(context);
-          },
-          child: const Icon(Icons.update),
-        ),
-        body: Column(
-          children: [
-            FutureBuilder<Map>(
-                future: widget._futurePost,
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Error!${snapshot.error}'));
-                  }
-                  if (snapshot.hasData) {
-                    post = snapshot.data!;
-                    return Column(
-                      children: [
-                        Text(
-                          '${post['title']}',
-                          style: const TextStyle(
-                              fontSize: 25, fontWeight: FontWeight.bold),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Text(
-                            '${post['body']}',
-                            style: const TextStyle(
-                                fontSize: 15, fontStyle: FontStyle.italic),
-                          ),
-                        )
-                      ],
-                    );
-                  }
-                  return const Center(child: CircularProgressIndicator());
-                }),
-          ],
-        ));
+      appBar: AppBar(
+        title: const Text('Details'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+              onPressed: () async {},
+              // deleting the listed item,
+              //   bool deleted = await HTTPhelper().deleteItem(widget.itemId);
+              //   if (deleted) {
+              //     ScaffoldMessenger.of(context).showSnackBar(
+              //         const SnackBar(content: Text('Post deleted')));
+              //     Navigator.pop(context);
+              //   } else {
+              //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              //         content: Text('faild to delete ${widget.itemId}')));
+              //   }
+              // },
+              icon: const Icon(Icons.delete_forever))
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          //update the current data
+          BottomSheet(context);
+        },
+        child: const Icon(Icons.update),
+      ),
+    );
+
+    // body: Scaffold(
+    //   Column(
+    //   children: [
+    //     FutureBuilder<Map>(
+    //         future: widget._futurePost,
+    //         builder: (context, snapshot) {
+    //           if (snapshot.hasError) {
+    //             return Center(child: Text('Error!${snapshot.error}'));
+    //           }
+    //           if (snapshot.hasData) {
+    //             post = snapshot.data!;
+    //             return Column(
+    //               children: [
+    //                 Text(
+    //                   '${post['title']}',
+    //                   style: const TextStyle(
+    //                       fontSize: 25, fontWeight: FontWeight.bold),
+    //                 ),
+    //                 Padding(
+    //                   padding: const EdgeInsets.all(10),
+    //                   child: Text(
+    //                     '${post['description']}',
+    //                     style: const TextStyle(
+    //                         fontSize: 15, fontStyle: FontStyle.italic),
+    //                   ),
+    //                 )
+    //               ],
+    //             );
+    // ),
+
+    //             }
+    //             return const Center(child: CircularProgressIndicator());
+    //           }),
+    //     ],
+    //   )
+    // );
   }
 }

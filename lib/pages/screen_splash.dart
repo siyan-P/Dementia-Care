@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_4/main.dart';
 import 'package:flutter_application_4/pages/screen_login.dart';
+import 'package:flutter_application_4/pages/temp.dart';
+import 'package:flutter_application_4/screen_home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 //import 'package:awesome_notifications/awesome_notifications.dart';
+String SAVE_KEY_NAME = '';
+String SAVE_USER_NAME = '';
 
 class screen_splash extends StatefulWidget {
   const screen_splash({Key? key}) : super(key: key);
@@ -10,6 +17,13 @@ class screen_splash extends StatefulWidget {
 }
 
 class _screen_splashState extends State<screen_splash> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    CheckUseLoggedIn();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,5 +71,29 @@ class _screen_splashState extends State<screen_splash> {
                 ],
               )),
         ));
+  }
+
+  //shared preferences -->checking
+  Future<void> CheckUseLoggedIn() async {
+    final _shardPref = await SharedPreferences.getInstance();
+    var _userLoggedIn = _shardPref.getString('SAVE_KEY_NAME');
+    var _userDetails = _shardPref.getString('SAVE_USER_NAME');
+    setState(() {
+      SAVE_KEY_NAME = _userLoggedIn!;
+      SAVE_USER_NAME = _userDetails!;
+    });
+    if (_userLoggedIn == null) {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => screen_login(),
+          ));
+    } else {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => screen_home(null, null, null, SAVE_USER_NAME),
+          ));
+    }
   }
 }
