@@ -4,10 +4,8 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_application_4/API/HTTPhelper.dart';
 import 'package:flutter_application_4/API/youtube.dart';
 import 'package:flutter_application_4/consts/constands.dart';
-import 'package:flutter_application_4/pages/screen_AddPost.dart';
 import 'package:flutter_application_4/pages/screen_splash.dart';
 import 'package:flutter_application_4/pages/screen_sympMain.dart';
-import 'package:http/http.dart';
 
 class screen_qus extends StatefulWidget {
   screen_qus({Key? key}) : super(key: key);
@@ -45,7 +43,7 @@ class _screen_qusState extends State<screen_qus> {
             Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => screen_sympMain(null)));
           },
-          child: Icon(Icons.next_plan),
+          child: const Icon(Icons.next_plan),
         ),
         body: FutureBuilder<List<Map>>(
           future: _futurepost,
@@ -62,35 +60,48 @@ class _screen_qusState extends State<screen_qus> {
                     return GestureDetector(
                       onTap: () {
                         Navigator.of(context).push(MaterialPageRoute(
-                            builder: (context) => youtubeVideo()));
+                            builder: (context) => const youtubeVideo()));
                       },
                       child: Card(
-                        child: Column(
-                          children: [
-                            Text("Dementia Care"),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ListTile(
-                                title: Center(
-                                  child: Text(
-                                    '${thisItem['title']}',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25)),
+                        //shadowColor: Colors.pinkAccent,
+                        elevation: 4,
+                        clipBehavior: Clip.antiAlias,
+                        child: Container(
+                          decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: [
+                            Colors.blueGrey.shade100,
+                            Colors.grey.shade200
+                          ])),
+                          child: Column(
+                            children: [
+                              // Text("Dementia Care"),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: ListTile(
+                                  title: Center(
+                                    child: Text(
+                                      '${thisItem['title']}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18),
+                                    ),
                                   ),
+                                  subtitle: Text(
+                                      '${thisItem['description']}A person with dementia might become agitated when once-simple tasks become difficult. To limit challenges and ease frustration'),
                                 ),
-                                subtitle: Text(
-                                    '${thisItem['description']}A person with dementia might become agitated when once-simple tasks become difficult. To limit challenges and ease frustration'),
                               ),
-                            ),
-                            verticalspace(15),
-                            Text('for more,Click -->video lectures'),
-                          ],
+                              verticalspace(15),
+                              const Text('for more,Click -->video lectures'),
+                            ],
+                          ),
                         ),
                       ),
                     );
                   });
             }
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           },
         ));
   }

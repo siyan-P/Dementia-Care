@@ -30,6 +30,7 @@ class screen_login extends StatefulWidget {
 class _screen_loginState extends State<screen_login> {
   TextEditingController emailControllerL = TextEditingController();
   TextEditingController passControllerL = TextEditingController();
+  bool faild = false;
   final _formKey = GlobalKey<FormState>();
   //facebook
   Map<String, dynamic>? _userData;
@@ -268,7 +269,11 @@ class _screen_loginState extends State<screen_login> {
                       user,
                     )));
       } else {
+        faild = true;
         print("faild to creating account");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error! while creating account')),
+        );
       }
     } catch (e) {
       print(e.toString());
@@ -375,6 +380,7 @@ class _screen_loginState extends State<screen_login> {
                                   );
                                   login(emailControllerL.text.toString(),
                                       passControllerL.text.toString(), context);
+
                                   //navigation to  home page
 
                                 }

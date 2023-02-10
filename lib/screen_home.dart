@@ -8,6 +8,7 @@ import 'package:flutter_application_4/pages/MyLocation.dart';
 import 'package:flutter_application_4/pages/screeen_about.dart';
 import 'package:flutter_application_4/pages/screen_login.dart';
 import 'package:flutter_application_4/pages/screen_qus.dart';
+import 'package:flutter_application_4/pages/screen_splash.dart';
 import 'package:flutter_application_4/pages/screen_symptoms.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'dart:convert';
@@ -1758,9 +1759,13 @@ class _screen_homeState extends State<screen_home> {
 
   //--> logout (username and password),
 
-  void _logoutUser(ctx) async {
-    final _sharedPref = SharedPreferences.getInstance();
-    // await _sharedPref.clear();
+  Future<void> _logoutUser(ctx) async {
+    Future<SharedPreferences> _sharedPref = SharedPreferences.getInstance();
+    //await _sharedPref.whenComplete(() => null);
+    // await _sharedPref.
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.clear();
+
     Navigator.of(ctx).popUntil((route) => route.isFirst);
   }
   //-->facebook logout & return back to first screen!

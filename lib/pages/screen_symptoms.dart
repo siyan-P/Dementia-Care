@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_4/consts/constands.dart';
 import 'package:flutter_application_4/pages/screen_sympMain.dart';
 import 'package:flutter_application_4/services/remote_services.dart';
 import 'package:http/http.dart' as http;
@@ -37,7 +38,7 @@ class _screen_symptomsState extends State<screen_symptoms> {
     }
   }
 
-  Future<void> BottomSheet(BuildContext ctx) async {
+  Future<void> BottomSheet(BuildContext ctx, [int? index]) async {
     showModalBottomSheet(
         backgroundColor: Colors.white,
         barrierColor: Colors.transparent,
@@ -46,24 +47,33 @@ class _screen_symptomsState extends State<screen_symptoms> {
           return Container(
             height: 570,
             decoration: BoxDecoration(
-                color: const Color(0xFF2e3253).withOpacity(0.4),
+                color: const Color(0xFF2e3253).withOpacity(0.2),
                 borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(20),
                     topLeft: Radius.circular(20))),
             child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
+              padding: const EdgeInsets.all(35),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                // mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('posts!.id.toString()'),
-                  SizedBox(
-                    height: 20,
+                  Text(
+                    posts![index!].title.toString(),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
+                  verticalspace(25),
+                  const Text(
+                    "Description: ",
+                    style: TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                  verticalspace(25),
+                  Text(posts![index].body.toString()),
+                  verticalspace(50),
                   ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      icon: Icon(Icons.close),
+                      icon: const Icon(Icons.close),
                       label: const Text('Close'))
                 ],
               ),
@@ -101,13 +111,23 @@ class _screen_symptomsState extends State<screen_symptoms> {
                     //         builder: (context) => screen_sympMain(),
                     //         settings:
                     //             RouteSettings(arguments: posts![index].id)));
-                    BottomSheet(context);
+                    BottomSheet(context, index);
                   },
                   child: Card(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25)),
+                      shadowColor: Colors.grey,
+                      elevation: 8,
                       child: ListTile(
-                          title: Text(posts![index].id.toString()),
+                          title: Text(
+                            posts![index].title.toString(),
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           //  title: Text(),
-                          subtitle: Text(posts![index].title),
+                          subtitle: const Text(
+                            "show more details about it,Click",
+                            textAlign: TextAlign.end,
+                          ),
                           //  leading: CircleAvatar(
                           //   backgroundImage: NetworkImage(
                           //     snapshot.data?[index]['image'])),

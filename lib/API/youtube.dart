@@ -30,13 +30,18 @@ class _youtubeVideoState extends State<youtubeVideo> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Dementia Care"),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            Text(
-              "Dementia Care",
+            verticalspace(20),
+            const Text(
+              "follow the instructions,use video lectures",
               textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
             ),
             verticalspace(25),
             Padding(
